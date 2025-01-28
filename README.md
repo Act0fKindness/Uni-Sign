@@ -42,9 +42,9 @@ If you have any questions, please feel free to contact Zecheng Li (lizecheng19@g
 
 ## 👍 Acknowledgement
 The codebase of Uni-Sign is adapted from [GFSLT-VLP](https://github.com/zhoubenjia/GFSLT-VLP). We are also grateful for the following projects our Uni-Sign arise from:
-* 🤟[SSLT](https://github.com/facebookresearch/ssvp_slt): a excellent sign language translation framework!
+* 🤟[SSVP-SLT](https://github.com/facebookresearch/ssvp_slt): a excellent sign language translation framework! 
 * 🏃️[MMPose](https://github.com/open-mmlab/mmpose): an open-source toolbox for pose estimation.
-* [🤠FUNASR](https://github.com/modelscope/FunASR): a high-performance speech-to-text toolkit.
+* 🤠[FUNASR](https://github.com/modelscope/FunASR): a high-performance speech-to-text toolkit.
 
 
 ## 📑 Citation
