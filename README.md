@@ -30,8 +30,8 @@ If our project helps you, please give us a star🌟 on GitHub, that would motiva
 
 
 ## 👨‍💻 Todo
-- [ ] Release CSL-News dataset
-
+- [ ] Release CSL-News dataset (before February 23rd, 2025)
+- [ ] Release Uni-Sign implementation (before March 1st, 2025)
 
 [//]: # (## 🛠️ Requirements and Installation)
 
@@ -50,5 +50,10 @@ The codebase of Uni-Sign is adapted from [GFSLT-VLP](https://github.com/zhoubenj
 ## 📑 Citation
 If you find Uni-Sign useful for your research and applications, please cite using this BibTeX:
 ```
-Coming Soon
+@article{li2025uni,
+  title={Uni-Sign: Toward Unified Sign Language Understanding at Scale},
+  author={Li, Zecheng and Zhou, Wengang and Zhao, Weichao and Wu, Kepeng and Hu, Hezhen and Li, Houqiang},
+  journal={arXiv preprint arXiv:2501.15187},
+  year={2025}
+}
 ```
