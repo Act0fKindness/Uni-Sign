@@ -9,7 +9,7 @@ wandb
 demo/
 backup
 *.pth
-*.txt
+#*.txt
 out/
 log/
 *.json
