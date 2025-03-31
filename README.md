@@ -69,7 +69,8 @@ bash ./script/eval_stage3.sh
 If you have any questions, please feel free to contact Zecheng Li (lizecheng19@gmail.com). Thank you.
 
 ## 👍 Acknowledgement
-The codebase of Uni-Sign is adapted from [GFSLT-VLP](https://github.com/zhoubenjia/GFSLT-VLP). We are also grateful for the following projects our Uni-Sign arise from:
+The codebase of Uni-Sign is adapted from [GFSLT-VLP](https://github.com/zhoubenjia/GFSLT-VLP), while the implementations of the pose/temporal encoders are derived from [CoSign](https://openaccess.thecvf.com/content/ICCV2023/papers/Jiao_CoSign_Exploring_Co-occurrence_Signals_in_Skeleton-based_Continuous_Sign_Language_Recognition_ICCV_2023_paper.pdf). We sincerely appreciate the authors of CoSign for personally sharing their code 🙏. \
+We are also grateful for the following projects our Uni-Sign arise from:
 * 🤟[SSVP-SLT](https://github.com/facebookresearch/ssvp_slt): a excellent sign language translation framework! 
 * 🏃️[MMPose](https://github.com/open-mmlab/mmpose): an open-source toolbox for pose estimation.
 * 🤠[FUNASR](https://github.com/modelscope/FunASR): a high-performance speech-to-text toolkit.
