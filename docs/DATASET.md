@@ -47,6 +47,7 @@ For simplicity, our datasets are structured in the following way:
 #### Note: 
 * You first need to download the [mt5-base](https://huggingface.co/google/mt5-base) weights, and place them in the `./pretrained_weight/mt5-base`.
 * Download the [CSL-News](https://huggingface.co/datasets/ZechengLi19/CSL-News/tree/main), [CSL-Daily](https://ustc-slr.github.io/datasets/2021_csl_daily/), and [WLASL](https://github.com/dxli94/WLASL) datasets based on your requirements.
-* The pose_format folders for the CSL-Daily and WLASL datasets can be downloaded from [here](https://huggingface.co/ZechengLi19/Uni-Sign), which are extracted using the RTMPose from MMPose.
+* If the `sentence-crop` folder is missing in the CSL Daily dataset, please refer to Issue [#7](https://github.com/ZechengLi19/Uni-Sign/issues/7) for guidance.
+* The `pose_format` folders for the CSL-Daily and WLASL datasets can be downloaded from [here](https://huggingface.co/ZechengLi19/Uni-Sign), which are extracted using the RTMPose from MMPose.
 * The Uni-Sign checkpoints can be found [here](https://huggingface.co/ZechengLi19/Uni-Sign).
 * If the datasets or mt5 checkpoint are stored in different paths, you can modify the `config.py` file to specify the new paths.
