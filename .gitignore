@@ -6,7 +6,6 @@ core*
 # *.sh
 *.bin
 wandb
-demo/
 backup
 *.pth
 #*.txt
