@@ -26,6 +26,8 @@ If our project helps you, please give us a star🌟 on GitHub, that would motiva
 
 [2025/2/24] Release CSL-News dataset and code implementation.
 
+[2025/6/5] Release lighter pose extraction and online inference implementation. Check it out [here](./demo/README.md) 🎊🎊. 
+
 ## 🛠️ Installation
 We suggest to create a new conda environment. 
 ```bash
@@ -64,6 +66,7 @@ bash ./script/eval_stage3.sh
 ## 👨‍💻 Todo
 - [x] Release CSL-News dataset
 - [x] Release Uni-Sign implementation 
+- [x] Release pose extraction and online inference implementation
 
 ## 📮 Contact
 If you have any questions, please feel free to contact Zecheng Li (lizecheng19@gmail.com). Thank you.

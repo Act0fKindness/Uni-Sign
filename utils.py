@@ -530,5 +530,8 @@ def get_args_parser():
     
     # select label smooth
     parser.add_argument("--label_smoothing", default=0.2, type=float)
-    
+
+    # online inference
+    parser.add_argument("--online_video", default="", type=str)
+
     return parser

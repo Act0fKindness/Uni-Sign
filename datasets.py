@@ -592,3 +592,67 @@ class S2T_Dataset_news(Base_Dataset):
 
     def __str__(self):
         return f'#total {len(self)}'
+
+class S2T_Dataset_online(Base_Dataset):
+    def __init__(self, args):
+        super(S2T_Dataset_online, self).__init__()
+        self.args = args
+        self.rgb_support = self.args.rgb_support
+        self.max_length = args.max_length
+
+        # place holder
+        self.rgb_data = None
+        self.pose_data = None
+
+        self.data_transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+        ])
+
+    def __len__(self):
+        return 1
+
+    def __getitem__(self, index):
+        text = ''
+        gloss = ''
+        name_sample = 'online_data'
+
+        pose_sample, support_rgb_dict = self.load_pose()
+
+        return name_sample, pose_sample, text, gloss, support_rgb_dict
+
+    def load_pose(self):
+        pose = self.pose_data
+
+        duration = len(pose['scores'])
+        start = 0
+
+        if duration > self.max_length:
+            tmp = sorted(random.sample(range(duration), k=self.max_length))
+        else:
+            tmp = list(range(duration))
+
+        tmp = np.array(tmp) + start
+
+        skeletons = pose['keypoints']
+        confs = pose['scores']
+        skeletons_tmp = []
+        confs_tmp = []
+        for index in tmp:
+            skeletons_tmp.append(skeletons[index])
+            confs_tmp.append(confs[index])
+
+        skeletons = skeletons_tmp
+        confs = confs_tmp
+
+        kps_with_scores = load_part_kp(skeletons, confs, force_ok=True)
+
+        support_rgb_dict = {}
+        if self.rgb_support:
+            full_path = self.rgb_data
+            support_rgb_dict = load_support_rgb_dict(tmp, skeletons, confs, full_path, self.data_transform)
+
+        return kps_with_scores, support_rgb_dict
+
+    def __str__(self):
+        return f'#total {len(self)}'
