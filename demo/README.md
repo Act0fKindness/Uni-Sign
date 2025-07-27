@@ -7,7 +7,9 @@ We need to install some package to launch the files in here.
 # activate environment
 conda activate Uni-Sign
 # install other relevant dependencies
-pip install rtmlib, onnxruntime-gpu, cuda-toolkit
+pip install onnxruntime-gpu, cuda-toolkit
+cd ./demo/rtmlib
+pip install -e .
 ```
 
 ## 🦴 Pose Extraction

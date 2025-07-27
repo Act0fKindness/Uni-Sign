@@ -42,7 +42,9 @@ pip install -r requirements.txt
 Please follow the instructions provided in [DATASET.md](./docs/DATASET.md) for data preparation.
 
 ## 🔨 Training & Evaluation
-All scripts must be executed within the Uni-Sign directory.
+All scripts must be executed within the Uni-Sign directory. 
+
+For the pre-training code, please refer to [Issue #15](https://github.com/ZechengLi19/Uni-Sign/issues/15) for detailed instructions. Thanks to [@williams-bert](https://github.com/williams-bert) for generously sharing the code implementation.
 ### Training
 **Stage 1**: pose-only pre-training.
 ```bash
