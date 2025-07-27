@@ -8,7 +8,7 @@ We need to install some package to launch the files in here.
 conda activate Uni-Sign
 # install other relevant dependencies
 pip install onnxruntime-gpu, cuda-toolkit
-cd ./demo/rtmlib
+cd ./demo/rtmlib-main
 pip install -e .
 ```
 
