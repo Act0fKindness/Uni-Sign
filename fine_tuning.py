@@ -29,12 +29,18 @@ def main(args):
     print(train_data)
     train_sampler = torch.utils.data.distributed.DistributedSampler(train_data,shuffle=True)
     train_dataloader = DataLoader(train_data,
-                                 batch_size=args.batch_size, 
-                                 num_workers=args.num_workers, 
+                                 batch_size=args.batch_size,
+                                 num_workers=args.num_workers,
                                  collate_fn=train_data.collate_fn,
-                                 sampler=train_sampler, 
+                                 sampler=train_sampler,
                                  pin_memory=args.pin_mem,
                                  drop_last=True)
+
+    if hasattr(train_dataloader, "dataset") and len(train_dataloader.dataset) == 0:
+        raise RuntimeError(
+            "Train dataloader is empty. Check WLBSL split folders under "
+            f"{rgb_dirs['WLBSL']} and that your CSV keys match the filenames."
+        )
     
     dev_data = S2T_Dataset(path=dev_label_paths[args.dataset], 
                            args=args, phase='dev')
