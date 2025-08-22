@@ -48,10 +48,12 @@ def collect(follow_links=False):
         raise SystemExit(f"project_map.md not found at {PROJECT_MAP}")
     text = PROJECT_MAP.read_text().splitlines()
     entry_points, data_dirs, checkpoints, utilities = [], [], [], []
+    
     for line in text:
         line = line.strip()
         if not line or line.startswith("#"):
             continue
+
         clean = re.sub(r'^[-*]\s*', '', line)
         # Entry points
         if re.search(r"pre_training\.py|fine_tuning\.py|demo/", clean):
@@ -67,6 +69,7 @@ def collect(follow_links=False):
             )
             cnt, sz = dir_stats(dir_path, follow=follow)
             data_dirs.append(f"{path} — {cnt} files, {human(sz)}")
+
         # Checkpoints
         if re.search(r"out/|checkpoints", clean):
             checkpoints.append(clean)
@@ -80,7 +83,6 @@ def collect(follow_links=False):
         "Utilities & Scripts": utilities,
     }
 
-
 def format_section(title, items):
     out = [f"## {title}"]
     for it in sorted(set(items)):
@@ -88,12 +90,12 @@ def format_section(title, items):
     out.append("")
     return "\n".join(out)
 
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--follow-symlinks", action="store_true", dest="follow")
     args = ap.parse_args()
     info = collect(follow_links=args.follow)
+
     lines = ["# Project Map Recap", ""]
     for title, items in info.items():
         lines.append(format_section(title, items))
@@ -101,7 +103,6 @@ def main():
     OUT_DOC.parent.mkdir(parents=True, exist_ok=True)
     OUT_DOC.write_text(output)
     print(output)
-
 
 if __name__ == "__main__":
     main()

@@ -125,7 +125,6 @@ class Uni_Sign(nn.Module):
                 in_channels = 3
                 self.rgb_init_note = f"random ({e})"
             self.rgb_proj = nn.Conv2d(in_channels, hidden_dim, kernel_size=1)
-
             self.fusion_pose_rgb_linear = nn.Linear(hidden_dim, hidden_dim)
             
             # PGF

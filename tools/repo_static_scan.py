@@ -53,6 +53,7 @@ def scan_file(path):
 def main():
     results = {}
     for root, dirs, files in os.walk(ROOT):
+
         if any(part.startswith('.') and part != '.' for part in Path(root).parts):
             continue
         for fn in files:

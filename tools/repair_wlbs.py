@@ -16,8 +16,7 @@ assert str(Path(_utils.__file__).resolve()).startswith(str(ROOT)), (
     f"Wrong utils imported: {_utils.__file__}"
 )
 
-from env_doctor import dataset_section, dataset_smoke  # noqa: E402
-
+from env_doctor import dataset_section, dataset_smoke
 
 def make_dev_from_train(src, count, seed=42, dry_run=False):
     train = Path(src) / "train"
