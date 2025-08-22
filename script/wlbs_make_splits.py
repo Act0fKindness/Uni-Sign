@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, csv, argparse
+import os, csv, argparse, sys
 from pathlib import Path
 
 ap = argparse.ArgumentParser()
@@ -8,25 +8,81 @@ ap.add_argument("--rgb-root", default="./dataset/WLBSL/rgb_format")
 ap.add_argument("--split-col", default=None, help="split column name if present (e.g., split/phase/subset)")
 args = ap.parse_args()
 
-root = Path(args.rgb_root)
-for s in ["train","dev","test"]:
-    (root / s).mkdir(parents=True, exist_ok=True)
+csv_path = Path(os.path.expanduser(args.csv))
+rgb_root = Path(os.path.expanduser(args.rgb_root))
+
+# canonical target directory
+target_root = Path("./dataset/WLBSL/rgb_format").resolve()
+for s in ["train", "dev", "test"]:
+    (target_root / s).mkdir(parents=True, exist_ok=True)
+
+# map existing files under rgb_root by lowercase basename for quick lookup
+existing = {}
+if rgb_root.exists():
+    for p in list(rgb_root.glob("*.mp4")) + list(rgb_root.glob("*.MP4")):
+        existing[p.name.lower()] = p.resolve()
+
+# normalisation helpers
+def norm_path(p: str) -> str:
+    p = os.path.expanduser(p)
+    return p.replace("/projects/dev/inverse/", "/projects/dev/Uni-Sign/")
 
 def norm_split(x):
-    if not isinstance(x,str): return "train"
+    if not isinstance(x, str):
+        return "train"
     x = x.strip().lower()
-    if x in {"val","valid","validation"}: return "dev"
-    return x if x in {"train","dev","test"} else "train"
+    mapping = {"val": "dev", "valid": "dev", "validation": "dev"}
+    x = mapping.get(x, x)
+    return x if x in {"train", "dev", "test"} else "train"
 
-with open(args.csv, newline='', encoding='utf-8') as f:
+video_keys = ["video_path", "video", "filename", "file", "path"]
+label_keys = ["label", "gloss"]
+split_keys = ["split", "phase", "subset", "partition", "set"]
+
+counts = {"train": 0, "dev": 0, "test": 0}
+missing = []
+
+with csv_path.open(newline="", encoding="utf-8") as f:
     rdr = csv.DictReader(f)
     for row in rdr:
-        vid = (row.get("video_path") or row.get("video") or row.get("filename") or "").strip()
-        if not vid: continue
-        base = os.path.basename(os.path.expanduser(vid))
-        split = norm_split(row.get(args.split_col) if args.split_col else None)
-        src = root / base if (root / base).exists() else Path(os.path.expanduser(vid))
-        dst = root / split / base
-        if src.exists() and not dst.exists():
+        row = {k.strip().lower(): (v.strip().replace("\r", "") if isinstance(v, str) else v) for k, v in row.items()}
+        vid = next((row.get(k) for k in video_keys if row.get(k)), "")
+        if not vid:
+            continue
+        vid_norm = norm_path(vid)
+        base = os.path.basename(vid_norm)
+        src = existing.get(base.lower())
+        if src is None:
+            cand = Path(vid_norm)
+            if cand.exists():
+                src = cand.resolve()
+        if src is None:
+            missing.append(vid)
+            continue
+        if args.split_col:
+            sp_val = row.get(args.split_col.strip().lower())
+        else:
+            sp_val = next((row.get(k) for k in split_keys if row.get(k)), None)
+        split = norm_split(sp_val)
+        dst = target_root / split / base
+        if not dst.exists():
             rel = os.path.relpath(src, dst.parent)
-            os.symlink(rel, dst)
+            try:
+                os.symlink(rel, dst)
+            except FileExistsError:
+                pass
+        counts[split] += 1
+
+report_path = Path("./out/wlbs_split_report.txt")
+report_path.parent.mkdir(parents=True, exist_ok=True)
+with report_path.open("w", encoding="utf-8") as rf:
+    for item in missing[:200]:
+        rf.write(f"{item}\n")
+
+for s in ["train", "dev", "test"]:
+    print(f"{s:<5} : {counts[s]} files")
+print(f"missing: {len(missing)} (see {report_path})")
+
+if counts["train"] == 0:
+    sys.exit(1)
+sys.exit(0)
