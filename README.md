@@ -58,42 +58,14 @@ If you need a quick validation set, you can sample a few training videos:
 python3 script/wlbs_make_dev_from_train.py --count 500
 ```
 
-You can verify your setup with the recap, doctor and peek tools:
+You can verify your setup with the doctor and peek tools:
 
 ```bash
-python3 tools/recap_project_map.py --follow-symlinks
 bash script/doctor.sh --src "$PWD/dataset/WLBSL/rgb_format"
 python3 script/wlbs_dataset_peek.py --dataset WLBSL --rgb_support --phase train
 ```
-Or in Python:
-
-```python
-from config import train_label_paths
-from types import SimpleNamespace
-from datasets import S2T_Dataset
-
-args = SimpleNamespace(dataset='WLBSL', max_length=64, rgb_support=True)
-ds = S2T_Dataset(path=train_label_paths['WLBSL'], args=args, phase='train')
-item = ds[0]
-if isinstance(item, tuple):
-    src, tgt, meta = item if len(item) == 3 else (*item, None)
-    print("src type:", type(src), "tgt type:", type(tgt))
-```
 
 For more detailed steps see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
-
-### Wrong module imported
-If a script accidentally imports modules from another project on your machine, pin the repo root:
-
-```python
-from pathlib import Path
-import sys
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
-import utils as _utils
-assert str(Path(_utils.__file__).resolve()).startswith(str(ROOT))
-```
-This snippet ensures modules resolve to the current repo and is included in our CLI helpers.
 
 ### Training WLBSL without pose PKLs
 If pose `.pkl` files are unavailable, you can fine-tune using RGB frames only by adding `--rgb_support`:
@@ -104,7 +76,6 @@ torchrun --standalone --nproc_per_node=1 fine_tuning.py \
   --output_dir ./out/wlbs_stage2_smoke_rgb --finetune ./out/stage1_pretraining/best_checkpoint.pth \
   --epochs 1 --batch-size 16 --num_workers 8
 ```
-`--allow_partial_load` defaults to `auto` when `--rgb_support` is set. Override via `--allow_partial_load true|false` if needed.
 
 ## 🔨 Training & Evaluation
 All scripts must be executed within the Uni-Sign directory. 

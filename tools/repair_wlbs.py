@@ -2,21 +2,12 @@
 """Basic repair helper for WLBSL dataset.
 Checks split directories and can populate dev split.
 """
+import argparse, os, random, shutil
 from pathlib import Path
-import argparse, os, random, shutil, sys
+from env_doctor import dataset_section, dataset_smoke
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
-try:
-    import utils as _utils  # noqa: E402
-except Exception as e:
-    print(f"skipped (failed to import repo utils: {e})")
-    raise SystemExit(0)
-assert str(Path(_utils.__file__).resolve()).startswith(str(ROOT)), (
-    f"Wrong utils imported: {_utils.__file__}"
-)
 
-from env_doctor import dataset_section, dataset_smoke
 
 def make_dev_from_train(src, count, seed=42, dry_run=False):
     train = Path(src) / "train"

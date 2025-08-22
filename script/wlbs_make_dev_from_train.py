@@ -1,18 +1,5 @@
 #!/usr/bin/env python3
-"""Sample training videos to populate WLBSL dev split."""
-from pathlib import Path
-import os, glob, random, argparse, sys
-
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
-try:
-    import utils as _utils  # noqa: E402
-except Exception as e:
-    print(f"skipped (failed to import repo utils: {e})")
-    raise SystemExit(0)
-assert str(Path(_utils.__file__).resolve()).startswith(str(ROOT)), (
-    f"Wrong utils imported: {_utils.__file__}"
-)
+import os, glob, random, argparse
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--train", default="./dataset/WLBSL/rgb_format/train")

@@ -335,24 +335,21 @@ def load_video_support_rgb(path, tmp):
 # build base dataset
 class Base_Dataset(Dataset.Dataset):
     def collate_fn(self, batch):
-        """Collate function compatible with new __getitem__ contract."""
+        """Custom collate function to handle pose-based or RGB-only batches."""
 
-        if len(batch[0]) == 2:
-            src_list, meta_list = zip(*batch)
-            tgt_list = [None] * len(src_list)
-        else:
-            src_list, tgt_list, meta_list = zip(*batch)
-
-        if self.rgb_support and all(isinstance(s, dict) and 'rgb' in s for s in src_list):
+        # RGB-only path: each pose_sample is a dict with {'rgb': arr, 'pose': None}
+        if batch and isinstance(batch[0][1], dict) and batch[0][1].get('pose') is None and 'rgb' in batch[0][1]:
             import numpy as np
 
-            name_batch = [m.get('video', '') for m in meta_list]
-            tgt_batch = [t.get('sentence', '') if t else '' for t in tgt_list]
-            gloss_batch = [t.get('gloss', '') if t else '' for t in tgt_list]
-            rgb_tmp = [s['rgb'] for s in src_list]
+            tgt_batch, name_batch, gloss_batch, rgb_tmp = [], [], [], []
+            for name_sample, sample_dict, text, gloss, _ in batch:
+                name_batch.append(name_sample)
+                tgt_batch.append(text)
+                gloss_batch.append(gloss)
+                rgb_tmp.append(sample_dict['rgb'])
 
             src_input = {}
-            max_len = max(r.shape[0] for r in rgb_tmp)
+            max_len = max([r.shape[0] for r in rgb_tmp])
             video_length = torch.LongTensor([r.shape[0] for r in rgb_tmp])
 
             padded = []
@@ -362,11 +359,11 @@ class Base_Dataset(Dataset.Dataset):
                     arr = np.concatenate([arr, pad], axis=0)
                 padded.append(arr)
 
-            img_batch = torch.from_numpy(np.stack(padded)).permute(0, 1, 4, 2, 3).float() / 255.0
-            b, t, c, h, w = img_batch.shape
-            img_batch = img_batch.view(-1, c, h, w)
-            img_batch = torch.stack([self.data_transform(frame) for frame in img_batch], 0)
-            img_batch = img_batch.view(b, t, c, h, w)
+            img_batch = torch.from_numpy(np.stack(padded)).permute(0,1,4,2,3).float()/255.0
+            b,t,c,h,w = img_batch.shape
+            img_batch = img_batch.view(-1,c,h,w)
+            img_batch = torch.stack([self.data_transform(frame) for frame in img_batch],0)
+            img_batch = img_batch.view(b,t,c,h,w)
 
             src_input['rgb'] = img_batch
 
@@ -374,7 +371,7 @@ class Base_Dataset(Dataset.Dataset):
             for i in video_length:
                 tmp = torch.ones([i]) + 7
                 mask_gen.append(tmp)
-            mask_gen = pad_sequence(mask_gen, padding_value=0, batch_first=True)
+            mask_gen = pad_sequence(mask_gen, padding_value=0,batch_first=True)
             img_padding_mask = (mask_gen != 0).long()
             src_input['attention_mask'] = img_padding_mask
             src_input['name_batch'] = name_batch
@@ -383,48 +380,52 @@ class Base_Dataset(Dataset.Dataset):
             tgt_input = {'gt_sentence': tgt_batch, 'gt_gloss': gloss_batch}
             return src_input, tgt_input
 
-        # Pose-based path
-        name_batch = [m.get('video', '') for m in meta_list]
-        gloss_batch = [t.get('gloss', '') if t else '' for t in tgt_list]
-        tgt_batch = [t.get('sentence', '') if t else '' for t in tgt_list]
-        pose_tmp = src_list
+        # Pose-based path (original)
+        tgt_batch, src_length_batch, name_batch, pose_tmp, gloss_batch = [], [], [], [], []
+
+        for name_sample, pose_sample, text, gloss, _ in batch:
+            name_batch.append(name_sample)
+            pose_tmp.append(pose_sample)
+            tgt_batch.append(text)
+            gloss_batch.append(gloss)
 
         src_input = {}
+
         keys = pose_tmp[0].keys()
         for key in keys:
-            max_len = max(len(vid[key]) for vid in pose_tmp)
+            max_len = max([len(vid[key]) for vid in pose_tmp])
             video_length = torch.LongTensor([len(vid[key]) for vid in pose_tmp])
 
-            padded_video = [
-                torch.cat(
-                    (
-                        vid[key],
-                        vid[key][-1][None].expand(max_len - len(vid[key]), -1, -1),
-                    ),
-                    dim=0,
+            padded_video = [torch.cat(
+                (
+                    vid[key],
+                    vid[key][-1][None].expand(max_len - len(vid[key]), -1, -1),
                 )
-                for vid in pose_tmp
-            ]
+                , dim=0)
+                for vid in pose_tmp]
 
-            img_batch = torch.stack(padded_video, 0)
+            img_batch = torch.stack(padded_video,0)
 
             src_input[key] = img_batch
-            if 'attention_mask' not in src_input:
+            if 'attention_mask' not in src_input.keys():
+                src_length_batch = video_length
+
                 mask_gen = []
-                for i in video_length:
+                for i in src_length_batch:
                     tmp = torch.ones([i]) + 7
                     mask_gen.append(tmp)
-                mask_gen = pad_sequence(mask_gen, padding_value=0, batch_first=True)
+                mask_gen = pad_sequence(mask_gen, padding_value=0,batch_first=True)
                 img_padding_mask = (mask_gen != 0).long()
                 src_input['attention_mask'] = img_padding_mask
+
                 src_input['name_batch'] = name_batch
-                src_input['src_length_batch'] = video_length
+                src_input['src_length_batch'] = src_length_batch
 
         if self.rgb_support:
-            support_rgb_dicts = {k: [] for k in meta_list[0].get('support_rgb', {}).keys()}
-            for meta in meta_list:
-                for k, v in meta.get('support_rgb', {}).items():
-                    support_rgb_dicts[k].append(v)
+            support_rgb_dicts = {key:[] for key in batch[0][-1].keys()}
+            for _, _, _, _, support_rgb_dict in batch:
+                for key in support_rgb_dict.keys():
+                    support_rgb_dicts[key].append(support_rgb_dict[key])
 
             for part in ['left', 'right']:
                 index_key = f'{part}_sampled_indices'
@@ -432,16 +433,19 @@ class Base_Dataset(Dataset.Dataset):
                 rgb_key = f'{part}_hands'
                 len_key = f'{part}_rgb_len'
 
-                index_batch = torch.cat(support_rgb_dicts.get(index_key, []), 0)
-                skeletons_batch = torch.cat(support_rgb_dicts.get(skeletons_key, []), 0)
-                img_batch = torch.cat(support_rgb_dicts.get(rgb_key, []), 0)
+                index_batch = torch.cat(support_rgb_dicts[index_key], 0)
+                skeletons_batch = torch.cat(support_rgb_dicts[skeletons_key], 0)
+                img_batch = torch.cat(support_rgb_dicts[rgb_key], 0)
 
                 src_input[index_key] = index_batch
                 src_input[skeletons_key] = skeletons_batch
                 src_input[rgb_key] = img_batch
-                src_input[len_key] = [len(index) for index in support_rgb_dicts.get(index_key, [])]
+                src_input[len_key] = [len(index) for index in support_rgb_dicts[index_key]]
 
-        tgt_input = {'gt_sentence': tgt_batch, 'gt_gloss': gloss_batch}
+        tgt_input = {}
+        tgt_input['gt_sentence'] = tgt_batch
+        tgt_input['gt_gloss'] = gloss_batch
+
         return src_input, tgt_input
 
 
@@ -520,14 +524,6 @@ class S2T_Dataset(Base_Dataset):
         return len(self.list)
     
     def __getitem__(self, index):
-        """Return dataset item following (src, tgt, meta) contract.
-
-        Train/Dev: (src, tgt, meta)
-            src  - tensor-like input (pose dict or RGB array)
-            tgt  - dict with 'sentence' and 'gloss'
-            meta - dict with at least {'video': filename}
-        Test: (src, meta)
-        """
         if getattr(self, "_abs_rgb", False):
             rgb_file = self.list[index]
             key = os.path.basename(rgb_file)
@@ -539,7 +535,7 @@ class S2T_Dataset(Base_Dataset):
 
         if isinstance(sample, dict):
             text = sample.get('text', '')
-            gloss = " ".join(sample['gloss']) if "gloss" in sample else ''
+            gloss = " ".join(sample['gloss']) if "gloss" in sample.keys() else ''
             name_sample = sample.get('name', key)
             pose_path = sample.get('video_path', key)
         else:
@@ -547,24 +543,14 @@ class S2T_Dataset(Base_Dataset):
             name_sample = key
             pose_path = key if not getattr(self, "_abs_rgb", False) else rgb_file
 
-        meta = {"video": name_sample}
-
+        # RGB-only: skip pose loading and just return frames
         if self.rgb_support:
             rgb_only = self.load_rgb(rgb_file, max_len=self.max_length)
-            src = {"rgb": rgb_only}
-            if self.phase == 'test':
-                return src, meta
-            tgt = {"sentence": text, "gloss": gloss}
-            return src, tgt, meta
+            return name_sample, {"rgb": rgb_only, "pose": None}, text, gloss, {}
 
         pose_sample, support_rgb_dict = self.load_pose(pose_path)
-        meta["support_rgb"] = support_rgb_dict
 
-        if self.phase == 'test':
-            return pose_sample, meta
-
-        tgt = {"sentence": text, "gloss": gloss}
-        return pose_sample, tgt, meta
+        return name_sample, pose_sample, text, gloss, support_rgb_dict
 
     def load_rgb(self, video_path, max_len=256):
         import cv2
