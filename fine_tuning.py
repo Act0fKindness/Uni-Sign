@@ -17,6 +17,7 @@ from transformers import get_scheduler
 from config import *
 
 def main(args):
+
     utils.init_distributed_mode_ds(args)
 
     print(args)
@@ -82,15 +83,34 @@ def main(args):
         if param.requires_grad:
             param.data = param.data.to(torch.float32)
 
+    if args.require_finetune and args.finetune == '':
+        raise RuntimeError("--require_finetune set but no --finetune path provided")
+
     if args.finetune != '':
         print('***********************************')
         print('Load Checkpoint...')
         print('***********************************')
-        state_dict = torch.load(args.finetune, map_location='cpu')['model']
+        ckpt = torch.load(args.finetune, map_location='cpu')
+        if isinstance(ckpt, dict) and 'model' in ckpt:
+            ckpt = ckpt['model']
 
-        ret = model.load_state_dict(state_dict, strict=True)
-        print('Missing keys: \n', '\n'.join(ret.missing_keys))
-        print('Unexpected keys: \n', '\n'.join(ret.unexpected_keys))
+        model_state = model.state_dict()
+        filtered = {k: v for k, v in ckpt.items() if k in model_state and v.shape == model_state[k].shape}
+        missing = [k for k in model_state.keys() if k not in filtered]
+        unexpected = [k for k in ckpt.keys() if k not in model_state]
+
+        allow_partial = (args.allow_partial_load == 'true') or (
+            args.allow_partial_load == 'auto' and args.rgb_support
+        )
+        if allow_partial:
+            model.load_state_dict(filtered, strict=False)
+        else:
+            model.load_state_dict(ckpt, strict=True)
+
+        report = Path(args.output_dir) / 'ckpt_load_report.txt'
+        with open(report, 'w') as f:
+            f.write(f'loaded {len(filtered)} keys\nmissing {len(missing)}\nunexpected {len(unexpected)}\n')
+        print(f"[ckpt] loaded {len(filtered)} keys; missing {len(missing)}; unexpected {len(unexpected)}. partial={'ON' if allow_partial else 'OFF'}")
     
     model_without_ddp = model
     if args.distributed:
