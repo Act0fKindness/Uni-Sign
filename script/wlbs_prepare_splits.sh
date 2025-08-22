@@ -33,7 +33,8 @@ python3 script/wlbs_make_splits.py --csv "$CSV" --rgb-root "$SRC" --split-col sp
 echo "[counts]"
 train_count=0
 for p in train dev test; do
-  c=$(find ./dataset/WLBSL/rgb_format/$p -type f \( -name '*.mp4' -o -name '*.MP4' \) 2>/dev/null | wc -l)
+  c=$(find -L ./dataset/WLBSL/rgb_format/$p -type f -iname '*.mp4' 2>/dev/null | wc -l)
+
   printf "  %-5s : %s files\n" "$p" "$c"
   if [ "$p" = "train" ]; then
     train_count=$c

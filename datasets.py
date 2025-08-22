@@ -428,6 +428,7 @@ class S2T_Dataset(Base_Dataset):
         ### CSV_COMPAT_FILTER_BEGIN
         import os as _os
         self._abs_rgb = False
+        self._empty = False
 
         if isinstance(self.raw_data, dict):
             # normalize to basenames
@@ -454,13 +455,18 @@ class S2T_Dataset(Base_Dataset):
                 self._abs_rgb = True
                 self.list = _abs
 
-        # Final guard
-        if len(self.list) == 0:
-            raise RuntimeError(
-                f"WLBSL {phase} split is empty. Expected files in {self.rgb_dir} or absolute paths in CSV. "
-                "Create split subfolders (train/dev/test) or symlink videos into them."
-            )
         ### CSV_COMPAT_FILTER_END
+
+        # Final guard (allow empty dev/test; only fail train)
+        if len(self.list) == 0:
+            if phase == 'train':
+                raise RuntimeError(
+                    f"WLBSL {phase} split is empty. Expected files in {self.rgb_dir} "
+                    "or absolute paths in CSV. Create split subfolders or symlink videos."
+                )
+            else:
+                self.list = []
+                self._empty = True
 
 
         self.data_transform = transforms.Compose([
