@@ -422,23 +422,51 @@ class S2T_Dataset(Base_Dataset):
         else:
             raise NotImplementedError
 
-        self.list = list(self.raw_data.keys())
-
-        # === CSV/Basename compatibility ===
-        # Ensure keys are basenames so joins like os.path.join(self.rgb_dir, key) work.
-        # Then drop any items missing from this phase's folder.
+        # === CSV/Basename & Absolute Path compatibility ===
+        # Normalize dict keys to basenames; use split folder join.
+        # If that yields zero, fallback to absolute paths in CSV (if present).
         ### CSV_COMPAT_FILTER_BEGIN
         import os as _os
+        self._abs_rgb = False
+        self._empty = False
+
         if isinstance(self.raw_data, dict):
+            # normalize to basenames
             self.raw_data = {_os.path.basename(k): v for k, v in self.raw_data.items()}
             self.list = list(self.raw_data.keys())
-        # keep only files that actually exist in the split folder
+        else:
+            self.list = list(self.raw_data) if self.raw_data is not None else []
+
+        # keep only files that exist under the current phase dir
         _keep = []
         for _k in self.list:
             if _os.path.exists(_os.path.join(self.rgb_dir, _k)):
                 _keep.append(_k)
         self.list = _keep
+
+        # Fallback: allow absolute CSV paths if split dir is empty
+        if not self.list and isinstance(self.raw_data, dict):
+            _abs = []
+            for _k in list(self.raw_data.keys()):
+                _kexp = _os.path.expanduser(_k)
+                if _os.path.isabs(_kexp) and _os.path.exists(_kexp):
+                    _abs.append(_kexp)
+            if _abs:
+                self._abs_rgb = True
+                self.list = _abs
+
         ### CSV_COMPAT_FILTER_END
+
+        # Final guard (allow empty dev/test; only fail train)
+        if len(self.list) == 0:
+            if phase == 'train':
+                raise RuntimeError(
+                    f"WLBSL {phase} split is empty. Expected files in {self.rgb_dir} "
+                    "or absolute paths in CSV. Create split subfolders or symlink videos."
+                )
+            else:
+                self.list = []
+                self._empty = True
 
 
         self.data_transform = transforms.Compose([
@@ -450,19 +478,28 @@ class S2T_Dataset(Base_Dataset):
         return len(self.list)
     
     def __getitem__(self, index):
-        key = self.list[index]
-        sample = self.raw_data[key]
-
-        text = sample['text']
-        if "gloss" in sample.keys():
-            gloss = " ".join(sample['gloss'])
+        if getattr(self, "_abs_rgb", False):
+            rgb_file = self.list[index]
+            key = os.path.basename(rgb_file)
         else:
-            gloss = ''
-        
-        name_sample = sample['name']
-        pose_sample, support_rgb_dict = self.load_pose(sample['video_path'])
+            key = self.list[index]
+            rgb_file = os.path.join(self.rgb_dir, key)
 
-        return name_sample,pose_sample,text, gloss, support_rgb_dict
+        sample = self.raw_data[key] if isinstance(self.raw_data, dict) else self.raw_data[index]
+
+        if isinstance(sample, dict):
+            text = sample.get('text', '')
+            gloss = " ".join(sample['gloss']) if "gloss" in sample.keys() else ''
+            name_sample = sample.get('name', key)
+            pose_path = sample.get('video_path', key)
+        else:
+            text = gloss = str(sample)
+            name_sample = key
+            pose_path = key if not getattr(self, "_abs_rgb", False) else rgb_file
+
+        pose_sample, support_rgb_dict = self.load_pose(pose_path)
+
+        return name_sample, pose_sample, text, gloss, support_rgb_dict
     
     def load_pose(self, path):
         pose = pickle.load(open(os.path.join(self.pose_dir, path.replace(".mp4", '.pkl')), 'rb'))
