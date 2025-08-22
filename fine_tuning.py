@@ -29,36 +29,48 @@ def main(args):
     print(train_data)
     train_sampler = torch.utils.data.distributed.DistributedSampler(train_data,shuffle=True)
     train_dataloader = DataLoader(train_data,
-                                 batch_size=args.batch_size, 
-                                 num_workers=args.num_workers, 
+                                 batch_size=args.batch_size,
+                                 num_workers=args.num_workers,
                                  collate_fn=train_data.collate_fn,
-                                 sampler=train_sampler, 
+                                 sampler=train_sampler,
                                  pin_memory=args.pin_mem,
                                  drop_last=True)
+
+    if hasattr(train_dataloader, "dataset") and len(train_dataloader.dataset) == 0:
+        raise RuntimeError(
+            "Train dataloader is empty. Check WLBSL split folders under "
+            f"{rgb_dirs['WLBSL']} and that your CSV keys match the filenames."
+        )
     
-    dev_data = S2T_Dataset(path=dev_label_paths[args.dataset], 
+    dev_data = S2T_Dataset(path=dev_label_paths[args.dataset],
                            args=args, phase='dev')
     print(dev_data)
-    # dev_sampler = torch.utils.data.distributed.DistributedSampler(dev_data,shuffle=False)
-    dev_sampler = torch.utils.data.SequentialSampler(dev_data)
-    dev_dataloader = DataLoader(dev_data,
-                                batch_size=args.batch_size,
-                                num_workers=args.num_workers, 
-                                collate_fn=dev_data.collate_fn,
-                                sampler=dev_sampler, 
-                                pin_memory=args.pin_mem)
-        
-    test_data = S2T_Dataset(path=test_label_paths[args.dataset], 
+    dev_dataloader = None
+    if len(dev_data) > 0:
+        dev_sampler = torch.utils.data.SequentialSampler(dev_data)
+        dev_dataloader = DataLoader(dev_data,
+                                    batch_size=args.batch_size,
+                                    num_workers=args.num_workers,
+                                    collate_fn=dev_data.collate_fn,
+                                    sampler=dev_sampler,
+                                    pin_memory=args.pin_mem)
+    else:
+        print("[WARN] dev split is empty — skipping validation.")
+
+    test_data = S2T_Dataset(path=test_label_paths[args.dataset],
                             args=args, phase='test')
     print(test_data)
-    # test_sampler = torch.utils.data.distributed.DistributedSampler(test_data,shuffle=False)
-    test_sampler = torch.utils.data.SequentialSampler(test_data)
-    test_dataloader = DataLoader(test_data,
-                                 batch_size=args.batch_size,
-                                 num_workers=args.num_workers, 
-                                 collate_fn=test_data.collate_fn,
-                                 sampler=test_sampler, 
-                                 pin_memory=args.pin_mem)
+    test_dataloader = None
+    if len(test_data) > 0:
+        test_sampler = torch.utils.data.SequentialSampler(test_data)
+        test_dataloader = DataLoader(test_data,
+                                     batch_size=args.batch_size,
+                                     num_workers=args.num_workers,
+                                     collate_fn=test_data.collate_fn,
+                                     sampler=test_sampler,
+                                     pin_memory=args.pin_mem)
+    else:
+        print("[WARN] test split is empty — skipping evaluation.")
 
     print(f"Creating model:")
     model = Uni_Sign(
@@ -110,13 +122,18 @@ def main(args):
     
     if args.eval:
         if utils.is_main_process():
-            if args.task != "ISLR":
+            if args.task != "ISLR" and dev_dataloader is not None:
                 print("📄 dev result")
                 evaluate(args, dev_dataloader, model, model_without_ddp, phase='dev')
-            print("📄 test result")
-            evaluate(args, test_dataloader, model, model_without_ddp, phase='test')
+            elif dev_dataloader is None:
+                print("[WARN] dev split is empty — skipping validation.")
+            if test_dataloader is not None:
+                print("📄 test result")
+                evaluate(args, test_dataloader, model, model_without_ddp, phase='test')
+            else:
+                print("[WARN] test split is empty — skipping evaluation.")
 
-        return 
+        return
     print(f"Start training for {args.epochs} epochs")
 
     for epoch in range(0, args.epochs):
@@ -134,53 +151,65 @@ def main(args):
 
         # single gpu inference
         if utils.is_main_process():
-            test_stats = evaluate(args, dev_dataloader, model, model_without_ddp, phase='dev')
-            evaluate(args, test_dataloader, model, model_without_ddp, phase='test')
+            test_stats = {}
+            if dev_dataloader is not None:
+                test_stats = evaluate(args, dev_dataloader, model, model_without_ddp, phase='dev')
+            else:
+                print("[WARN] dev split is empty — skipping validation.")
+            if test_dataloader is not None:
+                evaluate(args, test_dataloader, model, model_without_ddp, phase='test')
+            else:
+                print("[WARN] test split is empty — skipping evaluation.")
 
-            if args.task == "SLT":
-                if max_accuracy < test_stats["bleu4"]:
-                    max_accuracy = test_stats["bleu4"]
-                    if args.output_dir and utils.is_main_process():
-                        checkpoint_paths = [output_dir / 'best_checkpoint.pth']
-                        for checkpoint_path in checkpoint_paths:
-                            utils.save_on_master({
-                                'model': get_requires_grad_dict(model_without_ddp),
-                            }, checkpoint_path)
+            if dev_dataloader is not None:
+                if args.task == "SLT":
+                    if max_accuracy < test_stats["bleu4"]:
+                        max_accuracy = test_stats["bleu4"]
+                        if args.output_dir and utils.is_main_process():
+                            checkpoint_paths = [output_dir / 'best_checkpoint.pth']
+                            for checkpoint_path in checkpoint_paths:
+                                utils.save_on_master({
+                                    'model': get_requires_grad_dict(model_without_ddp),
+                                }, checkpoint_path)
 
-                print(f"BLEU-4 of the network on the {len(dev_dataloader)} dev videos: {test_stats['bleu4']:.2f}")
-                print(f'Max BLEU-4: {max_accuracy:.2f}%')
-            
-            elif args.task == "ISLR":
-                if max_accuracy < test_stats["top1_acc_pi"]:
-                    max_accuracy = test_stats["top1_acc_pi"]
-                    if args.output_dir and utils.is_main_process():
-                        checkpoint_paths = [output_dir / 'best_checkpoint.pth']
-                        for checkpoint_path in checkpoint_paths:
-                            utils.save_on_master({
-                                'model': get_requires_grad_dict(model_without_ddp),
-                            }, checkpoint_path)
+                    print(f"BLEU-4 of the network on the {len(dev_dataloader)} dev videos: {test_stats['bleu4']:.2f}")
+                    print(f'Max BLEU-4: {max_accuracy:.2f}%')
 
-                print(f"PI accuracy of the network on the {len(dev_dataloader)} dev videos: {test_stats['top1_acc_pi']:.2f}")
-                print(f'Max PI accuracy: {max_accuracy:.2f}%')
-            
-            elif args.task == "CSLR":
-                if max_accuracy > test_stats["wer"]:
-                    max_accuracy = test_stats["wer"]
-                    if args.output_dir and utils.is_main_process():
-                        checkpoint_paths = [output_dir / 'best_checkpoint.pth']
-                        for checkpoint_path in checkpoint_paths:
-                            utils.save_on_master({
-                                'model': get_requires_grad_dict(model_without_ddp),
-                            }, checkpoint_path)
-                            
-                print(f"WER of the network on the {len(dev_dataloader)} dev videos: {test_stats['wer']:.2f}")
-                print(f'Min WER: {max_accuracy:.2f}%')
-        
-            log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
-                        **{f'test_{k}': v for k, v in test_stats.items()},
-                        'epoch': epoch,
-                        'n_parameters': n_parameters}
-            
+                elif args.task == "ISLR":
+                    if max_accuracy < test_stats["top1_acc_pi"]:
+                        max_accuracy = test_stats["top1_acc_pi"]
+                        if args.output_dir and utils.is_main_process():
+                            checkpoint_paths = [output_dir / 'best_checkpoint.pth']
+                            for checkpoint_path in checkpoint_paths:
+                                utils.save_on_master({
+                                    'model': get_requires_grad_dict(model_without_ddp),
+                                }, checkpoint_path)
+
+                    print(f"PI accuracy of the network on the {len(dev_dataloader)} dev videos: {test_stats['top1_acc_pi']:.2f}")
+                    print(f'Max PI accuracy: {max_accuracy:.2f}%')
+
+                elif args.task == "CSLR":
+                    if max_accuracy > test_stats["wer"]:
+                        max_accuracy = test_stats["wer"]
+                        if args.output_dir and utils.is_main_process():
+                            checkpoint_paths = [output_dir / 'best_checkpoint.pth']
+                            for checkpoint_path in checkpoint_paths:
+                                utils.save_on_master({
+                                    'model': get_requires_grad_dict(model_without_ddp),
+                                }, checkpoint_path)
+
+                    print(f"WER of the network on the {len(dev_dataloader)} dev videos: {test_stats['wer']:.2f}")
+                    print(f'Min WER: {max_accuracy:.2f}%')
+
+                log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
+                            **{f'test_{k}': v for k, v in test_stats.items()},
+                            'epoch': epoch,
+                            'n_parameters': n_parameters}
+            else:
+                log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
+                            'epoch': epoch,
+                            'n_parameters': n_parameters}
+
         if args.output_dir and utils.is_main_process():
             with (output_dir / "log.txt").open("a") as f:
                 f.write(json.dumps(log_stats) + "\n")
