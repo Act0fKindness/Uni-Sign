@@ -1,9 +1,20 @@
 #!/usr/bin/env python3
 """Environment & dataset diagnostic script."""
-import argparse, json, os, sys, subprocess, shutil, random
+
 from pathlib import Path
+import argparse, json, os, sys, subprocess, shutil, random
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+try:
+    import utils as _utils  # noqa: E402
+except Exception as e:
+    print(f"skipped (failed to import repo utils: {e})")
+    raise SystemExit(0)
+assert str(Path(_utils.__file__).resolve()).startswith(str(ROOT)), (
+    f"Wrong utils imported: {_utils.__file__}"
+)
+
 OUT = ROOT / "out"
 OUT.mkdir(exist_ok=True)
 

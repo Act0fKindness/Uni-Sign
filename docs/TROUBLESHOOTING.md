@@ -1,8 +1,8 @@
 # Troubleshooting
 
-1. Recap project layout:
+1. Recap project layout (follow symlinks for accurate counts):
    ```bash
-   python3 tools/recap_project_map.py
+   python3 tools/recap_project_map.py --follow-symlinks
    ```
 2. Environment & dataset doctor:
    ```bash
@@ -21,7 +21,18 @@
    torchrun --standalone --nproc_per_node=1 fine_tuning.py \
      --task ISLR --dataset WLBSL --rgb_support \
      --output_dir ./out/wlbs_stage2_smoke_rgb \
-     --finetune ./out/stage1_pretraining/best_checkpoint.pth \
-     --allow_partial_load auto \
-     --epochs 1 --batch-size 8 --num_workers 8
+   --finetune ./out/stage1_pretraining/best_checkpoint.pth \
+    --epochs 1 --batch-size 8 --num_workers 8
    ```
+
+## Wrong module imported
+If a tool errors with paths outside this repo, ensure the repo root is pinned:
+
+```python
+from pathlib import Path
+import sys
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+import utils as _utils
+assert str(Path(_utils.__file__).resolve()).startswith(str(ROOT))
+```
