@@ -416,14 +416,30 @@ class S2T_Dataset(Base_Dataset):
             self.pose_dir = pose_dirs[args.dataset]
             self.rgb_dir = rgb_dirs[args.dataset]
             
-        elif "WLASL" in self.args.dataset:
+        elif self.args.dataset in pose_dirs:
             self.pose_dir = os.path.join(pose_dirs[args.dataset], phase)
             self.rgb_dir = os.path.join(rgb_dirs[args.dataset], phase)
-
         else:
             raise NotImplementedError
 
         self.list = list(self.raw_data.keys())
+
+        # === CSV/Basename compatibility ===
+        # Ensure keys are basenames so joins like os.path.join(self.rgb_dir, key) work.
+        # Then drop any items missing from this phase's folder.
+        ### CSV_COMPAT_FILTER_BEGIN
+        import os as _os
+        if isinstance(self.raw_data, dict):
+            self.raw_data = {_os.path.basename(k): v for k, v in self.raw_data.items()}
+            self.list = list(self.raw_data.keys())
+        # keep only files that actually exist in the split folder
+        _keep = []
+        for _k in self.list:
+            if _os.path.exists(_os.path.join(self.rgb_dir, _k)):
+                _keep.append(_k)
+        self.list = _keep
+        ### CSV_COMPAT_FILTER_END
+
 
         self.data_transform = transforms.Compose([
                                     transforms.ToTensor(),
