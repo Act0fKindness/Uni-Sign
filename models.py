@@ -107,8 +107,24 @@ class Uni_Sign(nn.Module):
             self.lang = 'English'
         
         if self.args.rgb_support:
-            self.rgb_support_backbone = torch.nn.Sequential(*list(torchvision.models.efficientnet_b0(pretrained=True).children())[:-2])
-            self.rgb_proj = nn.Conv2d(1280, hidden_dim, kernel_size=1)
+            try:
+                from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
+                weights = (
+                    EfficientNet_B0_Weights.DEFAULT
+                    if self.args.init_rgb_from == 'imagenet'
+                    else None
+                )
+                backbone = efficientnet_b0(weights=weights)
+                self.rgb_support_backbone = torch.nn.Sequential(
+                    *list(backbone.children())[:-2]
+                )
+                in_channels = 1280
+                self.rgb_init_note = "imagenet" if weights else "random"
+            except Exception as e:
+                self.rgb_support_backbone = torch.nn.Identity()
+                in_channels = 3
+                self.rgb_init_note = f"random ({e})"
+            self.rgb_proj = nn.Conv2d(in_channels, hidden_dim, kernel_size=1)
 
             self.fusion_pose_rgb_linear = nn.Linear(hidden_dim, hidden_dim)
             
@@ -139,6 +155,10 @@ class Uni_Sign(nn.Module):
         # projection for RGB-only mode
         if self.args.rgb_support:
             self.rgb_video_proj = nn.Linear(hidden_dim, 768)
+            torch.nn.init.kaiming_normal_(self.rgb_proj.weight, mode='fan_out')
+            torch.nn.init.zeros_(self.rgb_proj.bias)
+            torch.nn.init.kaiming_normal_(self.rgb_video_proj.weight, mode='fan_out')
+            torch.nn.init.zeros_(self.rgb_video_proj.bias)
 
         self.mt5_model = MT5ForConditionalGeneration.from_pretrained(mt5_path)
         self.mt5_tokenizer = T5Tokenizer.from_pretrained(mt5_path, legacy=False)
