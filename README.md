@@ -58,6 +58,15 @@ If you need a quick validation set, you can sample a few training videos:
 python3 script/wlbs_make_dev_from_train.py --count 500
 ```
 
+You can verify your setup with the doctor and peek tools:
+
+```bash
+bash script/doctor.sh --src "$PWD/dataset/WLBSL/rgb_format"
+python3 script/wlbs_dataset_peek.py --dataset WLBSL --rgb_support --phase train
+```
+
+For more detailed steps see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
+
 ### Training WLBSL without pose PKLs
 If pose `.pkl` files are unavailable, you can fine-tune using RGB frames only by adding `--rgb_support`:
 
