@@ -312,10 +312,64 @@ def cosine_scheduler_func(base_value, final_value, iters, epochs):
     schedule = lambda x: final_value + 0.5 * (base_value - final_value) * (1 + np.cos(np.pi * x / epochs))
     return schedule(iters)
 
+
 def load_dataset_file(filename):
-    with gzip.open(filename, "rb") as f:
-        loaded_object = pickle.load(f)
-        return loaded_object
+    """
+    Flexible loader:
+      - *.pkl.gz / *.pickle.gz : gzip+pickle
+      - *.pkl / *.pickle       : pickle
+      - *.json                 : json
+      - *.csv                  : CSV with header; returns {basename(video): label}
+      - otherwise              : try pickle, then plain text lines
+    """
+    import os, gzip, pickle, json, csv
+
+    fn = os.path.expanduser(filename)
+    if not os.path.isfile(fn):
+        raise FileNotFoundError(fn)
+
+    lower = fn.lower()
+    # gzip+pickle
+    if lower.endswith(('.pkl.gz', '.pickle.gz')):
+        with gzip.open(fn, 'rb') as f:
+            return pickle.load(f)
+    # plain pickle
+    if lower.endswith(('.pkl', '.pickle')):
+        with open(fn, 'rb') as f:
+            return pickle.load(f)
+    # json
+    if lower.endswith('.json'):
+        with open(fn, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    # csv: expect columns like video_path[,pose_path],label (case-insensitive, flexible naming)
+    if lower.endswith('.csv'):
+        def norm(x): return x.strip().lower() if isinstance(x,str) else x
+        data = {}
+        with open(fn, newline='', encoding='utf-8') as f:
+            rdr = csv.DictReader(f)
+            # normalise header keys
+            for row in rdr:
+                row = {norm(k): (v or '') for k,v in row.items()}
+                # accept a variety of column names
+                vid = (row.get('video_path') or row.get('video') or row.get('rgb') or
+                       row.get('path') or row.get('file') or row.get('filename') or '').strip()
+                lab = (row.get('label') or row.get('gloss') or '').strip()
+                if not vid:
+                    continue
+                # collapse to basename (dataset class will join with split dir)
+                import os
+                vname = os.path.basename(os.path.expanduser(vid))
+                data[vname] = lab
+        return data
+
+    # fallback: try pickle then plain text
+    try:
+        with open(fn, 'rb') as f:
+            return pickle.load(f)
+    except Exception:
+        with open(fn, 'r', encoding='utf-8') as f:
+            return [line.strip() for line in f if line.strip()]
+
 
 def yield_tokens(file_path):
     with io.open(file_path, encoding = 'utf-8') as f:
