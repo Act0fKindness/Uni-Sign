@@ -10,6 +10,7 @@ Resolution order:
 On success prints absolute path and exits 0.
 On failure prints guidance and exits 2.
 """
+
 import os
 import sys
 import glob

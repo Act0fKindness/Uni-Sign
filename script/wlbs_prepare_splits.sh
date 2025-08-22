@@ -34,6 +34,7 @@ echo "[counts]"
 train_count=0
 for p in train dev test; do
   c=$(find -L ./dataset/WLBSL/rgb_format/$p -type f -iname '*.mp4' 2>/dev/null | wc -l)
+
   printf "  %-5s : %s files\n" "$p" "$c"
   if [ "$p" = "train" ]; then
     train_count=$c
@@ -44,4 +45,5 @@ if [ "$train_count" -eq 0 ]; then
   echo "train split empty" >&2
   exit 1
 fi
+
 exit 0
