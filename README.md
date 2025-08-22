@@ -41,6 +41,23 @@ pip install -r requirements.txt
 ## 📖 Preparation
 Please follow the instructions provided in [DATASET.md](./docs/DATASET.md) for data preparation.
 
+### WLBSL videos outside the repo
+If WLBSL RGB videos are stored elsewhere, point the split scripts to their location:
+
+```bash
+echo /ABS/PATH/TO/WLBSL/rgb_format > tools/wlbs_src_hint.txt
+# or
+WLBSL_SRC=/ABS/PATH/TO/WLBSL/rgb_format bash script/wlbs_prepare_splits.sh
+```
+
+This will populate `dataset/WLBSL/rgb_format/{train,dev,test}` with symlinks.
+
+If you need a quick validation set, you can sample a few training videos:
+
+```
+python3 script/wlbs_make_dev_from_train.py --count 500
+```
+
 ## 🔨 Training & Evaluation
 All scripts must be executed within the Uni-Sign directory. 
 
