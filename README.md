@@ -58,6 +58,16 @@ If you need a quick validation set, you can sample a few training videos:
 python3 script/wlbs_make_dev_from_train.py --count 500
 ```
 
+### Training WLBSL without pose PKLs
+If pose `.pkl` files are unavailable, you can fine-tune using RGB frames only by adding `--rgb_support`:
+
+```bash
+torchrun --standalone --nproc_per_node=1 fine_tuning.py \
+  --task ISLR --dataset WLBSL --rgb_support \
+  --output_dir ./out/wlbs_stage2_smoke_rgb --finetune ./out/stage1_pretraining/best_checkpoint.pth \
+  --epochs 1 --batch-size 16 --num_workers 8
+```
+
 ## 🔨 Training & Evaluation
 All scripts must be executed within the Uni-Sign directory. 
 
