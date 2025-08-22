@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import os, csv, argparse, sys
 from pathlib import Path
 
@@ -85,4 +86,5 @@ print(f"missing: {len(missing)} (see {report_path})")
 
 if counts["train"] == 0:
     sys.exit(1)
+
 sys.exit(0)

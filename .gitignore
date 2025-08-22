@@ -16,4 +16,5 @@ log/
 *.mp4
 tools/*.jpg
 tools/*.mp4
+tools/wlbs_src_hint.txt
 pre_training.py
