@@ -17,6 +17,7 @@ from transformers import get_scheduler
 from config import *
 
 def main(args):
+
     utils.init_distributed_mode_ds(args)
 
     print(args)
@@ -82,15 +83,64 @@ def main(args):
         if param.requires_grad:
             param.data = param.data.to(torch.float32)
 
+    if args.require_finetune and args.finetune == '':
+        raise RuntimeError("--require_finetune set but no --finetune path provided")
+
+    if args.rgb_support and not getattr(args, 'allow_partial_load', None):
+        args.allow_partial_load = 'auto'
+
+    report = Path(args.output_dir) / 'ckpt_load_report.txt'
+
+    init_note = getattr(model, 'rgb_init_note', args.init_rgb_from)
+
     if args.finetune != '':
         print('***********************************')
         print('Load Checkpoint...')
         print('***********************************')
-        state_dict = torch.load(args.finetune, map_location='cpu')['model']
+        ckpt = torch.load(args.finetune, map_location='cpu')
+        if isinstance(ckpt, dict) and 'model' in ckpt:
+            ckpt = ckpt['model']
 
-        ret = model.load_state_dict(state_dict, strict=True)
-        print('Missing keys: \n', '\n'.join(ret.missing_keys))
-        print('Unexpected keys: \n', '\n'.join(ret.unexpected_keys))
+        model_state = model.state_dict()
+        filtered = {k: v for k, v in ckpt.items() if k in model_state and v.shape == model_state[k].shape}
+        missing = [k for k in model_state.keys() if k not in filtered]
+        unexpected = [k for k in ckpt.keys() if k not in model_state]
+
+        allow_partial = (args.allow_partial_load == 'true') or (
+            args.allow_partial_load == 'auto' and args.rgb_support
+        )
+        if allow_partial:
+            model.load_state_dict(filtered, strict=False)
+        else:
+            model.load_state_dict(ckpt, strict=True)
+
+        lines = [
+            f"file: {args.finetune}",
+            f"init_rgb_from: {init_note}",
+            f"partial: {'ON' if allow_partial else 'OFF'}",
+            f"loaded: {len(filtered)}",
+            f"missing: {len(missing)}",
+            f"unexpected: {len(unexpected)}",
+        ]
+        if missing:
+            lines.append('missing keys:')
+            lines.extend(f'  {k}' for k in missing[:50])
+            if len(missing) > 50:
+                lines.append(f'  +{len(missing)-50} more')
+        if unexpected:
+            lines.append('unexpected keys:')
+            lines.extend(f'  {k}' for k in unexpected[:50])
+            if len(unexpected) > 50:
+                lines.append(f'  +{len(unexpected)-50} more')
+        report.write_text('\n'.join(lines))
+        print(
+            f"[ckpt] loaded {len(filtered)} keys; missing {len(missing)}; unexpected {len(unexpected)}. "
+            f"partial={'ON' if allow_partial else 'OFF'} (rgb_support={args.rgb_support}). Report: {report}"
+        )
+    else:
+        report.write_text(
+            f"file: none\ninit_rgb_from: {init_note}\nloaded: 0\nmissing: 0\nunexpected: 0\n"
+        )
     
     model_without_ddp = model
     if args.distributed:
