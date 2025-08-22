@@ -2,34 +2,39 @@ mt5_path = "./pretrained_weight/mt5-base"
 
 # label paths
 train_label_paths = {
-                    "CSL_News": "./data/CSL_News/CSL_News_Labels.json",
-                    "CSL_Daily": "./data/CSL_Daily/labels.train",
-                    "WLASL": "./data/WLASL/labels-2000.train"
-                    }
+    "CSL_News": "./data/CSL_News/CSL_News_Labels.json",
+    "CSL_Daily": "./data/CSL_Daily/labels.train",
+    "WLASL": "./data/WLASL/labels-2000.train",
+    "WLBSL": "./data/WLBSL/WLBSL_Labels.csv",   # <— add
+}
 
 dev_label_paths = {
-                    "CSL_News": "./data/CSL_News/CSL_News_Labels.json",
-                    "CSL_Daily": "./data/CSL_Daily/labels.dev",
-                    "WLASL": "./data/WLASL/labels-2000.dev"
-                    }
+    "CSL_News": "./data/CSL_News/CSL_News_Labels.json",
+    "CSL_Daily": "./data/CSL_Daily/labels.dev",
+    "WLASL": "./data/WLASL/labels-2000.dev",
+    "WLBSL": "./data/WLBSL/WLBSL_Labels.csv",   # <— add
+}
 
 test_label_paths = {
-                    "CSL_News": "./data/CSL_News/CSL_News_Labels.json",
-                    "CSL_Daily": "./data/CSL_Daily/labels.test",
-                    "WLASL": "./data/WLASL/labels-2000.test"
-                    }
-
+    "CSL_News": "./data/CSL_News/CSL_News_Labels.json",
+    "CSL_Daily": "./data/CSL_Daily/labels.test",
+    "WLASL": "./data/WLASL/labels-2000.test",
+    "WLBSL": "./data/WLBSL/WLBSL_Labels.csv",   # <— add
+}
 
 # video paths
 rgb_dirs = {
-            "CSL_News": './dataset/CSL_News/rgb_format',
-            "CSL_Daily": './dataset/CSL_Daily/sentence-crop',
-            "WLASL": "./dataset/WLASL/rgb_format"
-            }
+    "CSL_News": "./dataset/CSL_News/rgb_format",
+    "CSL_Daily": "./dataset/CSL_Daily/sentence-crop",
+    "WLASL": "./dataset/WLASL/rgb_format",
+    "WLBSL": "./dataset/WLBSL/rgb_format",      # <— add (expects train/dev/test subfolders)
+}
 
 # pose paths
 pose_dirs = {
-            "CSL_News": './dataset/CSL_News/pose_format',
-            "CSL_Daily": './dataset/CSL_Daily/pose_format',
-            "WLASL": "./dataset/WLASL/pose_format"
-            }
+    "CSL_News": "./dataset/CSL_News/pose_format",
+    "CSL_Daily": "./dataset/CSL_Daily/pose_format",
+    "WLASL": "./dataset/WLASL/pose_format",
+    "WLBSL": "./dataset/WLBSL/pose_format",     # <— add (expects train/dev/test subfolders)
+}
+
