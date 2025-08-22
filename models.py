@@ -136,6 +136,10 @@ class Uni_Sign(nn.Module):
                     nn.init.constant_(layer.weight, 0)
                     nn.init.constant_(layer.bias, 0)
 
+        # projection for RGB-only mode
+        if self.args.rgb_support:
+            self.rgb_video_proj = nn.Linear(hidden_dim, 768)
+
         self.mt5_model = MT5ForConditionalGeneration.from_pretrained(mt5_path)
         self.mt5_tokenizer = T5Tokenizer.from_pretrained(mt5_path, legacy=False)
     
@@ -204,67 +208,77 @@ class Uni_Sign(nn.Module):
         return gcn_feat
 
     def forward(self, src_input, tgt_input):
-        # RGB branch forward
-        if self.args.rgb_support:
-            rgb_support_dict = {}
-            for index_key, rgb_key in zip(['left_sampled_indices', 'right_sampled_indices'], ['left_hands', 'right_hands']):
-                rgb_feat = self.rgb_support_backbone(src_input[rgb_key])
-                
-                rgb_support_dict[index_key] = src_input[index_key]
-                rgb_support_dict[rgb_key] = rgb_feat
-        
-        # Pose branch forward
-        features = []
+        # RGB-only forward path when no pose is provided
+        if self.args.rgb_support and 'rgb' in src_input and 'body' not in src_input:
+            rgb = src_input['rgb']  # B,T,C,H,W
+            b, t, c, h, w = rgb.shape
+            rgb_in = rgb.view(-1, c, h, w)
+            rgb_feat = self.rgb_support_backbone(rgb_in)
+            rgb_feat = self.rgb_proj(rgb_feat).mean([-2, -1])
+            rgb_feat = rgb_feat.view(b, t, -1)
+            inputs_embeds = self.rgb_video_proj(rgb_feat)
+        else:
+            # RGB branch forward for pose-based fusion
+            if self.args.rgb_support:
+                rgb_support_dict = {}
+                for index_key, rgb_key in zip(['left_sampled_indices', 'right_sampled_indices'], ['left_hands', 'right_hands']):
+                    rgb_feat = self.rgb_support_backbone(src_input[rgb_key])
 
-        body_feat = None
-        for part in self.modes:
-            # project position to hidden dim
-            proj_feat = self.proj_linear[part](src_input[part]).permute(0,3,1,2) #B,C,T,V
-            # spatial gcn forward
-            gcn_feat = self.gcn_modules[part](proj_feat)
-            if part == 'body':
-                body_feat = gcn_feat
+                    rgb_support_dict[index_key] = src_input[index_key]
+                    rgb_support_dict[rgb_key] = rgb_feat
 
-            else:
-                assert not body_feat is None
-                if part == 'left':
-                    # Pose RGB fusion
-                    if self.args.rgb_support:
-                        gcn_feat = self.gather_feat_pose_rgb(gcn_feat, 
-                                                            rgb_support_dict[f'{part}_hands'], 
-                                                            rgb_support_dict[f'{part}_sampled_indices'], 
-                                                            src_input[f'{part}_rgb_len'],
-                                                            src_input[f'{part}_skeletons_norm'],
-                                                            )
-                        
-                    gcn_feat = gcn_feat + body_feat[..., -2][...,None].detach()
-                    
-                elif part == 'right':
-                    # Pose RGB fusion
-                    if self.args.rgb_support:
-                        gcn_feat = self.gather_feat_pose_rgb(gcn_feat, 
-                                                                rgb_support_dict[f'{part}_hands'], 
+            # Pose branch forward
+            features = []
+
+            body_feat = None
+            for part in self.modes:
+                # project position to hidden dim
+                proj_feat = self.proj_linear[part](src_input[part]).permute(0,3,1,2) #B,C,T,V
+                # spatial gcn forward
+                gcn_feat = self.gcn_modules[part](proj_feat)
+                if part == 'body':
+                    body_feat = gcn_feat
+
+                else:
+                    assert not body_feat is None
+                    if part == 'left':
+                        # Pose RGB fusion
+                        if self.args.rgb_support:
+                            gcn_feat = self.gather_feat_pose_rgb(gcn_feat,
+                                                                rgb_support_dict[f'{part}_hands'],
                                                                 rgb_support_dict[f'{part}_sampled_indices'],
                                                                 src_input[f'{part}_rgb_len'],
                                                                 src_input[f'{part}_skeletons_norm'],
                                                                 )
-                        
-                    gcn_feat = gcn_feat + body_feat[..., -1][...,None].detach()
 
-                elif part == 'face_all':
-                    gcn_feat = gcn_feat + body_feat[..., 0][...,None].detach()
+                        gcn_feat = gcn_feat + body_feat[..., -2][...,None].detach()
 
-                else:
-                    raise NotImplementedError
-            
-            # temporal gcn forward
-            gcn_feat = self.fusion_gcn_modules[part](gcn_feat) #B,C,T,V
-            pool_feat = gcn_feat.mean(-1).transpose(1,2) #B,T,C
-            features.append(pool_feat)
-        
-        # concat sub-pose feature across token dimension
-        inputs_embeds = torch.cat(features, dim=-1) + self.part_para
-        inputs_embeds = self.pose_proj(inputs_embeds)
+                    elif part == 'right':
+                        # Pose RGB fusion
+                        if self.args.rgb_support:
+                            gcn_feat = self.gather_feat_pose_rgb(gcn_feat,
+                                                                    rgb_support_dict[f'{part}_hands'],
+                                                                    rgb_support_dict[f'{part}_sampled_indices'],
+                                                                    src_input[f'{part}_rgb_len'],
+                                                                    src_input[f'{part}_skeletons_norm'],
+                                                                    )
+
+                        gcn_feat = gcn_feat + body_feat[..., -1][...,None].detach()
+
+                    elif part == 'face_all':
+                        gcn_feat = gcn_feat + body_feat[..., 0][...,None].detach()
+
+                    else:
+                        raise NotImplementedError
+
+                # temporal gcn forward
+                gcn_feat = self.fusion_gcn_modules[part](gcn_feat) #B,C,T,V
+                pool_feat = gcn_feat.mean(-1).transpose(1,2) #B,T,C
+                features.append(pool_feat)
+
+            # concat sub-pose feature across token dimension
+            inputs_embeds = torch.cat(features, dim=-1) + self.part_para
+            inputs_embeds = self.pose_proj(inputs_embeds)
 
         prefix_token = self.mt5_tokenizer(
                                 [f"Translate sign language video to {self.lang}: "] * len(tgt_input["gt_sentence"]),

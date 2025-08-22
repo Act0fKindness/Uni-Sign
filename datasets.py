@@ -335,8 +335,54 @@ def load_video_support_rgb(path, tmp):
 # build base dataset
 class Base_Dataset(Dataset.Dataset):
     def collate_fn(self, batch):
-        tgt_batch,src_length_batch,name_batch,pose_tmp,gloss_batch = [],[],[],[],[]
-        
+        """Custom collate function to handle pose-based or RGB-only batches."""
+
+        # RGB-only path: each pose_sample is a dict with {'rgb': arr, 'pose': None}
+        if batch and isinstance(batch[0][1], dict) and batch[0][1].get('pose') is None and 'rgb' in batch[0][1]:
+            import numpy as np
+
+            tgt_batch, name_batch, gloss_batch, rgb_tmp = [], [], [], []
+            for name_sample, sample_dict, text, gloss, _ in batch:
+                name_batch.append(name_sample)
+                tgt_batch.append(text)
+                gloss_batch.append(gloss)
+                rgb_tmp.append(sample_dict['rgb'])
+
+            src_input = {}
+            max_len = max([r.shape[0] for r in rgb_tmp])
+            video_length = torch.LongTensor([r.shape[0] for r in rgb_tmp])
+
+            padded = []
+            for arr in rgb_tmp:
+                if arr.shape[0] < max_len:
+                    pad = np.repeat(arr[-1][None], max_len - arr.shape[0], axis=0)
+                    arr = np.concatenate([arr, pad], axis=0)
+                padded.append(arr)
+
+            img_batch = torch.from_numpy(np.stack(padded)).permute(0,1,4,2,3).float()/255.0
+            b,t,c,h,w = img_batch.shape
+            img_batch = img_batch.view(-1,c,h,w)
+            img_batch = torch.stack([self.data_transform(frame) for frame in img_batch],0)
+            img_batch = img_batch.view(b,t,c,h,w)
+
+            src_input['rgb'] = img_batch
+
+            mask_gen = []
+            for i in video_length:
+                tmp = torch.ones([i]) + 7
+                mask_gen.append(tmp)
+            mask_gen = pad_sequence(mask_gen, padding_value=0,batch_first=True)
+            img_padding_mask = (mask_gen != 0).long()
+            src_input['attention_mask'] = img_padding_mask
+            src_input['name_batch'] = name_batch
+            src_input['src_length_batch'] = video_length
+
+            tgt_input = {'gt_sentence': tgt_batch, 'gt_gloss': gloss_batch}
+            return src_input, tgt_input
+
+        # Pose-based path (original)
+        tgt_batch, src_length_batch, name_batch, pose_tmp, gloss_batch = [], [], [], [], []
+
         for name_sample, pose_sample, text, gloss, _ in batch:
             name_batch.append(name_sample)
             pose_tmp.append(pose_sample)
@@ -349,7 +395,7 @@ class Base_Dataset(Dataset.Dataset):
         for key in keys:
             max_len = max([len(vid[key]) for vid in pose_tmp])
             video_length = torch.LongTensor([len(vid[key]) for vid in pose_tmp])
-            
+
             padded_video = [torch.cat(
                 (
                     vid[key],
@@ -357,9 +403,9 @@ class Base_Dataset(Dataset.Dataset):
                 )
                 , dim=0)
                 for vid in pose_tmp]
-            
+
             img_batch = torch.stack(padded_video,0)
-            
+
             src_input[key] = img_batch
             if 'attention_mask' not in src_input.keys():
                 src_length_batch = video_length
@@ -374,13 +420,13 @@ class Base_Dataset(Dataset.Dataset):
 
                 src_input['name_batch'] = name_batch
                 src_input['src_length_batch'] = src_length_batch
-                
+
         if self.rgb_support:
             support_rgb_dicts = {key:[] for key in batch[0][-1].keys()}
             for _, _, _, _, support_rgb_dict in batch:
                 for key in support_rgb_dict.keys():
                     support_rgb_dicts[key].append(support_rgb_dict[key])
-            
+
             for part in ['left', 'right']:
                 index_key = f'{part}_sampled_indices'
                 skeletons_key = f'{part}_skeletons_norm'
@@ -390,7 +436,7 @@ class Base_Dataset(Dataset.Dataset):
                 index_batch = torch.cat(support_rgb_dicts[index_key], 0)
                 skeletons_batch = torch.cat(support_rgb_dicts[skeletons_key], 0)
                 img_batch = torch.cat(support_rgb_dicts[rgb_key], 0)
-                
+
                 src_input[index_key] = index_batch
                 src_input[skeletons_key] = skeletons_batch
                 src_input[rgb_key] = img_batch
@@ -422,48 +468,111 @@ class S2T_Dataset(Base_Dataset):
         else:
             raise NotImplementedError
 
-        self.list = list(self.raw_data.keys())
-
-        # === CSV/Basename compatibility ===
-        # Ensure keys are basenames so joins like os.path.join(self.rgb_dir, key) work.
-        # Then drop any items missing from this phase's folder.
+        # === CSV/Basename & Absolute Path compatibility ===
+        # Normalize dict keys to basenames; use split folder join.
+        # If that yields zero, fallback to absolute paths in CSV (if present).
         ### CSV_COMPAT_FILTER_BEGIN
         import os as _os
+        self._abs_rgb = False
+        self._empty = False
+
         if isinstance(self.raw_data, dict):
+            # normalize to basenames
             self.raw_data = {_os.path.basename(k): v for k, v in self.raw_data.items()}
             self.list = list(self.raw_data.keys())
-        # keep only files that actually exist in the split folder
+        else:
+            self.list = list(self.raw_data) if self.raw_data is not None else []
+
+        # keep only files that exist under the current phase dir
         _keep = []
         for _k in self.list:
             if _os.path.exists(_os.path.join(self.rgb_dir, _k)):
                 _keep.append(_k)
         self.list = _keep
+
+        # Fallback: allow absolute CSV paths if split dir is empty
+        if not self.list and isinstance(self.raw_data, dict):
+            _abs = []
+            for _k in list(self.raw_data.keys()):
+                _kexp = _os.path.expanduser(_k)
+                if _os.path.isabs(_kexp) and _os.path.exists(_kexp):
+                    _abs.append(_kexp)
+            if _abs:
+                self._abs_rgb = True
+                self.list = _abs
+
         ### CSV_COMPAT_FILTER_END
+
+        # Final guard (allow empty dev/test; only fail train)
+        if len(self.list) == 0:
+            if phase == 'train':
+                raise RuntimeError(
+                    f"WLBSL {phase} split is empty. Expected files in {self.rgb_dir} "
+                    "or absolute paths in CSV. Create split subfolders or symlink videos."
+                )
+            else:
+                self.list = []
+                self._empty = True
 
 
         self.data_transform = transforms.Compose([
                                     transforms.ToTensor(),
-                                    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]), 
+                                    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
                                     ])
 
     def __len__(self):
         return len(self.list)
     
     def __getitem__(self, index):
-        key = self.list[index]
-        sample = self.raw_data[key]
-
-        text = sample['text']
-        if "gloss" in sample.keys():
-            gloss = " ".join(sample['gloss'])
+        if getattr(self, "_abs_rgb", False):
+            rgb_file = self.list[index]
+            key = os.path.basename(rgb_file)
         else:
-            gloss = ''
-        
-        name_sample = sample['name']
-        pose_sample, support_rgb_dict = self.load_pose(sample['video_path'])
+            key = self.list[index]
+            rgb_file = os.path.join(self.rgb_dir, key)
 
-        return name_sample,pose_sample,text, gloss, support_rgb_dict
-    
+        sample = self.raw_data[key] if isinstance(self.raw_data, dict) else self.raw_data[index]
+
+        if isinstance(sample, dict):
+            text = sample.get('text', '')
+            gloss = " ".join(sample['gloss']) if "gloss" in sample.keys() else ''
+            name_sample = sample.get('name', key)
+            pose_path = sample.get('video_path', key)
+        else:
+            text = gloss = str(sample)
+            name_sample = key
+            pose_path = key if not getattr(self, "_abs_rgb", False) else rgb_file
+
+        # RGB-only: skip pose loading and just return frames
+        if self.rgb_support:
+            rgb_only = self.load_rgb(rgb_file, max_len=self.max_length)
+            return name_sample, {"rgb": rgb_only, "pose": None}, text, gloss, {}
+
+        pose_sample, support_rgb_dict = self.load_pose(pose_path)
+
+        return name_sample, pose_sample, text, gloss, support_rgb_dict
+
+    def load_rgb(self, video_path, max_len=256):
+        import cv2
+        cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            raise FileNotFoundError(f"Cannot open video: {video_path}")
+        total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        idxs = np.linspace(0, max(0, total - 1), num=min(max_len, max(1, total)), dtype=int)
+        idx_set = set(idxs.tolist())
+        frames = []
+        for i in range(total):
+            ok, frame = cap.read()
+            if not ok:
+                break
+            if i in idx_set:
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                frames.append(frame)
+        cap.release()
+        if len(frames) == 0:
+            raise RuntimeError(f"No frames decoded from {video_path}")
+        return np.stack(frames)
+
     def load_pose(self, path):
         pose = pickle.load(open(os.path.join(self.pose_dir, path.replace(".mp4", '.pkl')), 'rb'))
             
