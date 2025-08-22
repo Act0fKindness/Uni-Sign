@@ -44,4 +44,5 @@ if [ "$train_count" -eq 0 ]; then
   echo "train split empty" >&2
   exit 1
 fi
+
 exit 0
