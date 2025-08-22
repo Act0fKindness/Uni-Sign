@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+"""Locate WLBSL RGB video root.
+
+Resolution order:
+1. --src /abs/path (validate path contains mp4s)
+2. Env vars WLBSL_SRC or WLBSL_VIDEO_SRC
+3. Hint file tools/wlbs_src_hint.txt (first non-empty line)
+4. Existing repo scan (dataset/, data/, then glob)
+
+On success prints absolute path and exits 0.
+On failure prints guidance and exits 2.
+"""
 
 import os
 import sys
