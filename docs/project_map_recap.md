@@ -1,0 +1,130 @@
+# Project Map Recap
+
+## Key Entry Points
+- **demo/rtmlib-main** — 44 files, 255.7 KB
+- **demo/rtmlib-main/rtmlib** — 32 files, 138.6 KB
+- **demo/rtmlib-main/rtmlib/tools** — 21 files, 68.9 KB
+- **demo/rtmlib-main/rtmlib/visualization** — 9 files, 68.4 KB
+- fine_tuning.py (13.2 KB)
+- pre_training.py (10.5 KB)
+
+## Data Directories
+- "CSL_News": "./data/CSL_News/CSL_News_Labels.json",
+- **data/CSL_News/pose_format** — 2 files, 2.7 KB
+- **data/CSL_News/rgb_format** — 10 files, 12.3 MB
+- **data/CSL_News/rgb_format/archive_001** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_341** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_342** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_343** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_344** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_345** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_346** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_347** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_348** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_349** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_350** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_351** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_352** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_353** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_354** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_355** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_356** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_357** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_358** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_359** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_360** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_361** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_362** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_363** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_364** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_365** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_366** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_367** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_368** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_369** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_370** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_371** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_372** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_373** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_374** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_375** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_376** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_377** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_378** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_379** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_380** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_381** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_382** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_383** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_384** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_385** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_386** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_387** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_388** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_389** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_390** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_391** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_392** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_393** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_394** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_395** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_396** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_397** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_398** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_399** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_400** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_401** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_402** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_403** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_404** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_405** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_406** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_407** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_408** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_409** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_410** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_411** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_412** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_413** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_414** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_415** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_416** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_417** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_418** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_419** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_420** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_421** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_422** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_423** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_424** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_425** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_426** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_427** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_428** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_429** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_430** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_431** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_432** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_433** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_434** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_435** — 0 files, 0 B
+- **data/CSL_News/rgb_format/archive_436** — 0 files, 0 B
+- **data/CSL_News/rgb_format/rgb_format** — 0 files, 0 B
+- **data/WLBSL/pose_format** — 0 files, 0 B
+- **data/WLBSL/rgb_format** — 0 files, 0 B
+- **dataset/CSL_News/pose_format** — 2 files, 2.7 KB
+- **dataset/WLBSL/pose_format** — 0 files, 0 B
+- **dataset/WLBSL/rgb_format** — 0 files, 0 B
+- /home/danielharding/projects/dev/Uni-Sign/data/WLBSL/rgb_format/abandon_001.mp4,/home/danielharding/projects/dev/Uni-Sign/data/WLBSL/pose_format/abandon_001.pkl,abandon
+- /home/danielharding/projects/dev/Uni-Sign/data/WLBSL/rgb_format/abashed_001.mp4,/home/danielharding/projects/dev/Uni-Sign/data/WLBSL/pose_format/abashed_001.pkl,abashed
+- /home/danielharding/projects/dev/Uni-Sign/data/WLBSL/rgb_format/abattoir_001.mp4,/home/danielharding/projects/dev/Uni-Sign/data/WLBSL/pose_format/abattoir_001.pkl,abattoir
+- /home/danielharding/projects/dev/Uni-Sign/data/WLBSL/rgb_format/abbreviate_001.mp4,/home/danielharding/projects/dev/Uni-Sign/data/WLBSL/pose_format/abbreviate_001.pkl,abbreviate
+
+## Checkpoints
+- **checkpoints** — 1 files, 480 B
+- **checkpoints/wlbs_stage2_words** — 1 files, 480 B
+- **out/stage1_pretraining** — 1 files, 6.0 KB
+- **out/wlbs_stage2_islr** — 1 files, 2.6 KB
+- checkpoints work (1.1 MB)
+
+## Utilities & Scripts
