@@ -30,12 +30,12 @@ fi
 
 python3 script/wlbs_make_splits.py --csv "$CSV" --rgb-root "$SRC" --split-col split || true
 
-echo "[counts]"
+echo "[counts]" > out/wlbs_split_report.txt
 train_count=0
 for p in train dev test; do
   c=$(find -L ./dataset/WLBSL/rgb_format/$p -type f -iname '*.mp4' 2>/dev/null | wc -l)
-
-  printf "  %-5s : %s files\n" "$p" "$c"
+  broken=$(find ./dataset/WLBSL/rgb_format/$p -type l ! -exec test -e {} \; -print | wc -l 2>/dev/null)
+  printf "  %-5s : %s files (broken %s)\n" "$p" "$c" "$broken" | tee -a out/wlbs_split_report.txt
   if [ "$p" = "train" ]; then
     train_count=$c
   fi

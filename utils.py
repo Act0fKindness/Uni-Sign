@@ -572,6 +572,9 @@ def get_args_parser():
     
     # RGB branch
     parser.add_argument('--rgb_support', action='store_true',)
+    parser.add_argument('--allow_partial_load', choices=['auto','true','false'], default='auto')
+    parser.add_argument('--require_finetune', action='store_true')
+    parser.add_argument('--init_rgb_from', choices=['imagenet','none'], default='imagenet')
     
     # Pose length
     parser.add_argument("--max_length", default=256, type=int)
