@@ -107,12 +107,24 @@ class Uni_Sign(nn.Module):
             self.lang = 'English'
         
         if self.args.rgb_support:
-            from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
-            weights = EfficientNet_B0_Weights.DEFAULT if self.args.init_rgb_from == 'imagenet' else None
-            backbone = efficientnet_b0(weights=weights)
-            self.rgb_support_backbone = torch.nn.Sequential(*list(backbone.children())[:-2])
-            self.rgb_proj = nn.Conv2d(1280, hidden_dim, kernel_size=1)
-
+            try:
+                from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
+                weights = (
+                    EfficientNet_B0_Weights.DEFAULT
+                    if self.args.init_rgb_from == 'imagenet'
+                    else None
+                )
+                backbone = efficientnet_b0(weights=weights)
+                self.rgb_support_backbone = torch.nn.Sequential(
+                    *list(backbone.children())[:-2]
+                )
+                in_channels = 1280
+                self.rgb_init_note = "imagenet" if weights else "random"
+            except Exception as e:
+                self.rgb_support_backbone = torch.nn.Identity()
+                in_channels = 3
+                self.rgb_init_note = f"random ({e})"
+            self.rgb_proj = nn.Conv2d(in_channels, hidden_dim, kernel_size=1)
             self.fusion_pose_rgb_linear = nn.Linear(hidden_dim, hidden_dim)
             
             # PGF

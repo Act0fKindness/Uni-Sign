@@ -86,6 +86,13 @@ def main(args):
     if args.require_finetune and args.finetune == '':
         raise RuntimeError("--require_finetune set but no --finetune path provided")
 
+    if args.rgb_support and not getattr(args, 'allow_partial_load', None):
+        args.allow_partial_load = 'auto'
+
+    report = Path(args.output_dir) / 'ckpt_load_report.txt'
+
+    init_note = getattr(model, 'rgb_init_note', args.init_rgb_from)
+
     if args.finetune != '':
         print('***********************************')
         print('Load Checkpoint...')
@@ -107,10 +114,33 @@ def main(args):
         else:
             model.load_state_dict(ckpt, strict=True)
 
-        report = Path(args.output_dir) / 'ckpt_load_report.txt'
-        with open(report, 'w') as f:
-            f.write(f'loaded {len(filtered)} keys\nmissing {len(missing)}\nunexpected {len(unexpected)}\n')
-        print(f"[ckpt] loaded {len(filtered)} keys; missing {len(missing)}; unexpected {len(unexpected)}. partial={'ON' if allow_partial else 'OFF'}")
+        lines = [
+            f"file: {args.finetune}",
+            f"init_rgb_from: {init_note}",
+            f"partial: {'ON' if allow_partial else 'OFF'}",
+            f"loaded: {len(filtered)}",
+            f"missing: {len(missing)}",
+            f"unexpected: {len(unexpected)}",
+        ]
+        if missing:
+            lines.append('missing keys:')
+            lines.extend(f'  {k}' for k in missing[:50])
+            if len(missing) > 50:
+                lines.append(f'  +{len(missing)-50} more')
+        if unexpected:
+            lines.append('unexpected keys:')
+            lines.extend(f'  {k}' for k in unexpected[:50])
+            if len(unexpected) > 50:
+                lines.append(f'  +{len(unexpected)-50} more')
+        report.write_text('\n'.join(lines))
+        print(
+            f"[ckpt] loaded {len(filtered)} keys; missing {len(missing)}; unexpected {len(unexpected)}. "
+            f"partial={'ON' if allow_partial else 'OFF'} (rgb_support={args.rgb_support}). Report: {report}"
+        )
+    else:
+        report.write_text(
+            f"file: none\ninit_rgb_from: {init_note}\nloaded: 0\nmissing: 0\nunexpected: 0\n"
+        )
     
     model_without_ddp = model
     if args.distributed:
