@@ -44,3 +44,11 @@ data/**/*.tar.gz
 demo/**/rtmlib-main/build/
 demo/**/rtmlib-main/dist/
 demo/**/rtmlib-main/*.egg-info/
+data/CSL_News/CSL_News_Labels.csv
+data/CSL_News/CSL_News_Labels.filtered.skip_pose.json
+pretrained_weight/
+*.mp4
+*.avi
+*.mkv
+*.npz
+*.npy
