@@ -57,3 +57,26 @@ data/**/pose_format/**
 data/**/rgb_format/**
 data/**/*.csv*
 data/**/*.json
+# datasets (keep local)
+data/**/pose_format/**
+data/**/rgb_format/**
+data/CSL_News/**
+data/**/*.csv*
+data/**/*.json
+
+# weights & artifacts (keep local)
+pretrained_weight/**
+out/**
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+*.npz
+*.npy
+*.mp4
+*.avi
+*.mkv
+
+# OS/editor
+.DS_Store
+*.swp
