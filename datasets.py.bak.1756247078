@@ -371,7 +371,7 @@ class Base_Dataset(Dataset.Dataset):
 
             return list(src_list), list(tgt_list), list(meta_list)
     def __init__(self, path, args, phase):
-        super().__init__()
+        super(S2T_Dataset, self).__init__()
         self.args = args
         self.rgb_support = self.args.rgb_support
         self.max_length = args.max_length

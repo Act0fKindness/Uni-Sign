@@ -1,0 +1,361 @@
+nohup: ignoring input
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.1.3 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "/home/danielharding/miniconda3/envs/unisign/bin/deepspeed", line 3, in <module>
+    from deepspeed.launcher.runner import main
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/deepspeed/__init__.py", line 10, in <module>
+    import torch
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/__init__.py", line 1382, in <module>
+    from .functional import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/functional.py", line 7, in <module>
+    import torch.nn.functional as F
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/__init__.py", line 1, in <module>
+    from .modules import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/__init__.py", line 35, in <module>
+    from .transformer import TransformerEncoder, TransformerDecoder, \
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py", line 20, in <module>
+    device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py:20: UserWarning: Failed to initialize NumPy: _ARRAY_API not found (Triggered internally at ../torch/csrc/utils/tensor_numpy.cpp:84.)
+  device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+[2025-08-26 22:14:22,934] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+[2025-08-26 22:14:24,117] [WARNING] [runner.py:215:fetch_hostfile] Unable to find hostfile, will proceed with training with local resources only.
+Detected VISIBLE_DEVICES=0,1,2,3,4,5,6,7 but ignoring it because one or several of --include/--exclude/--num_gpus/--num_nodes cl args were used. If you want to use CUDA_VISIBLE_DEVICES don't pass any of these arguments to deepspeed.
+[2025-08-26 22:14:24,117] [INFO] [runner.py:607:main] cmd = /home/danielharding/miniconda3/envs/unisign/bin/python -u -m deepspeed.launcher.launch --world_info=eyJsb2NhbGhvc3QiOiBbMCwgMSwgMiwgMywgNCwgNSwgNiwgN119 --master_addr=127.0.0.1 --master_port=29511 --enable_each_rank_log=None pre_training.py --batch-size 4 --gradient-accumulation-steps 8 --epochs 5 --opt AdamW --lr 3e-4 --quick_break 2048 --output_dir out/stage2_pretraining --finetune out/stage1_pretraining/best_checkpoint.pth --dataset CSL_News
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.1.3 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/deepspeed/__init__.py", line 10, in <module>
+    import torch
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/__init__.py", line 1382, in <module>
+    from .functional import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/functional.py", line 7, in <module>
+    import torch.nn.functional as F
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/__init__.py", line 1, in <module>
+    from .modules import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/__init__.py", line 35, in <module>
+    from .transformer import TransformerEncoder, TransformerDecoder, \
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py", line 20, in <module>
+    device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py:20: UserWarning: Failed to initialize NumPy: _ARRAY_API not found (Triggered internally at ../torch/csrc/utils/tensor_numpy.cpp:84.)
+  device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+[2025-08-26 22:14:27,076] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+[2025-08-26 22:14:28,259] [INFO] [launch.py:139:main] 0 NCCL_P2P_DISABLE=1
+[2025-08-26 22:14:28,259] [INFO] [launch.py:139:main] 0 NCCL_ASYNC_ERROR_HANDLING=1
+[2025-08-26 22:14:28,259] [INFO] [launch.py:139:main] 0 NCCL_IB_DISABLE=1
+[2025-08-26 22:14:28,259] [INFO] [launch.py:146:main] WORLD INFO DICT: {'localhost': [0, 1, 2, 3, 4, 5, 6, 7]}
+[2025-08-26 22:14:28,259] [INFO] [launch.py:152:main] nnodes=1, num_local_procs=8, node_rank=0
+[2025-08-26 22:14:28,259] [INFO] [launch.py:163:main] global_rank_mapping=defaultdict(<class 'list'>, {'localhost': [0, 1, 2, 3, 4, 5, 6, 7]})
+[2025-08-26 22:14:28,259] [INFO] [launch.py:164:main] dist_world_size=8
+[2025-08-26 22:14:28,259] [INFO] [launch.py:168:main] Setting CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
+[2025-08-26 22:14:28,260] [INFO] [launch.py:256:main] process 48811 spawned with command: ['/home/danielharding/miniconda3/envs/unisign/bin/python', '-u', 'pre_training.py', '--local_rank=0', '--batch-size', '4', '--gradient-accumulation-steps', '8', '--epochs', '5', '--opt', 'AdamW', '--lr', '3e-4', '--quick_break', '2048', '--output_dir', 'out/stage2_pretraining', '--finetune', 'out/stage1_pretraining/best_checkpoint.pth', '--dataset', 'CSL_News']
+[2025-08-26 22:14:28,261] [INFO] [launch.py:256:main] process 48812 spawned with command: ['/home/danielharding/miniconda3/envs/unisign/bin/python', '-u', 'pre_training.py', '--local_rank=1', '--batch-size', '4', '--gradient-accumulation-steps', '8', '--epochs', '5', '--opt', 'AdamW', '--lr', '3e-4', '--quick_break', '2048', '--output_dir', 'out/stage2_pretraining', '--finetune', 'out/stage1_pretraining/best_checkpoint.pth', '--dataset', 'CSL_News']
+[2025-08-26 22:14:28,261] [INFO] [launch.py:256:main] process 48813 spawned with command: ['/home/danielharding/miniconda3/envs/unisign/bin/python', '-u', 'pre_training.py', '--local_rank=2', '--batch-size', '4', '--gradient-accumulation-steps', '8', '--epochs', '5', '--opt', 'AdamW', '--lr', '3e-4', '--quick_break', '2048', '--output_dir', 'out/stage2_pretraining', '--finetune', 'out/stage1_pretraining/best_checkpoint.pth', '--dataset', 'CSL_News']
+[2025-08-26 22:14:28,262] [INFO] [launch.py:256:main] process 48814 spawned with command: ['/home/danielharding/miniconda3/envs/unisign/bin/python', '-u', 'pre_training.py', '--local_rank=3', '--batch-size', '4', '--gradient-accumulation-steps', '8', '--epochs', '5', '--opt', 'AdamW', '--lr', '3e-4', '--quick_break', '2048', '--output_dir', 'out/stage2_pretraining', '--finetune', 'out/stage1_pretraining/best_checkpoint.pth', '--dataset', 'CSL_News']
+[2025-08-26 22:14:28,263] [INFO] [launch.py:256:main] process 48815 spawned with command: ['/home/danielharding/miniconda3/envs/unisign/bin/python', '-u', 'pre_training.py', '--local_rank=4', '--batch-size', '4', '--gradient-accumulation-steps', '8', '--epochs', '5', '--opt', 'AdamW', '--lr', '3e-4', '--quick_break', '2048', '--output_dir', 'out/stage2_pretraining', '--finetune', 'out/stage1_pretraining/best_checkpoint.pth', '--dataset', 'CSL_News']
+[2025-08-26 22:14:28,263] [INFO] [launch.py:256:main] process 48816 spawned with command: ['/home/danielharding/miniconda3/envs/unisign/bin/python', '-u', 'pre_training.py', '--local_rank=5', '--batch-size', '4', '--gradient-accumulation-steps', '8', '--epochs', '5', '--opt', 'AdamW', '--lr', '3e-4', '--quick_break', '2048', '--output_dir', 'out/stage2_pretraining', '--finetune', 'out/stage1_pretraining/best_checkpoint.pth', '--dataset', 'CSL_News']
+[2025-08-26 22:14:28,264] [INFO] [launch.py:256:main] process 48817 spawned with command: ['/home/danielharding/miniconda3/envs/unisign/bin/python', '-u', 'pre_training.py', '--local_rank=6', '--batch-size', '4', '--gradient-accumulation-steps', '8', '--epochs', '5', '--opt', 'AdamW', '--lr', '3e-4', '--quick_break', '2048', '--output_dir', 'out/stage2_pretraining', '--finetune', 'out/stage1_pretraining/best_checkpoint.pth', '--dataset', 'CSL_News']
+[2025-08-26 22:14:28,265] [INFO] [launch.py:256:main] process 48818 spawned with command: ['/home/danielharding/miniconda3/envs/unisign/bin/python', '-u', 'pre_training.py', '--local_rank=7', '--batch-size', '4', '--gradient-accumulation-steps', '8', '--epochs', '5', '--opt', 'AdamW', '--lr', '3e-4', '--quick_break', '2048', '--output_dir', 'out/stage2_pretraining', '--finetune', 'out/stage1_pretraining/best_checkpoint.pth', '--dataset', 'CSL_News']
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.1.3 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "/var/www/html/Uni-Sign/pre_training.py", line 3, in <module>
+    import torch
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/__init__.py", line 1382, in <module>
+    from .functional import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/functional.py", line 7, in <module>
+    import torch.nn.functional as F
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/__init__.py", line 1, in <module>
+    from .modules import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/__init__.py", line 35, in <module>
+    from .transformer import TransformerEncoder, TransformerDecoder, \
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py", line 20, in <module>
+    device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py:20: UserWarning: Failed to initialize NumPy: _ARRAY_API not found (Triggered internally at ../torch/csrc/utils/tensor_numpy.cpp:84.)
+  device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.1.3 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "/var/www/html/Uni-Sign/pre_training.py", line 3, in <module>
+    import torch
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/__init__.py", line 1382, in <module>
+    from .functional import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/functional.py", line 7, in <module>
+    import torch.nn.functional as F
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/__init__.py", line 1, in <module>
+    from .modules import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/__init__.py", line 35, in <module>
+    from .transformer import TransformerEncoder, TransformerDecoder, \
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py", line 20, in <module>
+    device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py:20: UserWarning: Failed to initialize NumPy: _ARRAY_API not found (Triggered internally at ../torch/csrc/utils/tensor_numpy.cpp:84.)
+  device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.1.3 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "/var/www/html/Uni-Sign/pre_training.py", line 3, in <module>
+    import torch
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/__init__.py", line 1382, in <module>
+    from .functional import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/functional.py", line 7, in <module>
+    import torch.nn.functional as F
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/__init__.py", line 1, in <module>
+    from .modules import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/__init__.py", line 35, in <module>
+    from .transformer import TransformerEncoder, TransformerDecoder, \
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py", line 20, in <module>
+    device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.1.3 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "/var/www/html/Uni-Sign/pre_training.py", line 3, in <module>
+    import torch
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/__init__.py", line 1382, in <module>
+    from .functional import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/functional.py", line 7, in <module>
+    import torch.nn.functional as F
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/__init__.py", line 1, in <module>
+    from .modules import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/__init__.py", line 35, in <module>
+    from .transformer import TransformerEncoder, TransformerDecoder, \
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py", line 20, in <module>
+    device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py:20: UserWarning: Failed to initialize NumPy: _ARRAY_API not found (Triggered internally at ../torch/csrc/utils/tensor_numpy.cpp:84.)
+  device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py:20: UserWarning: Failed to initialize NumPy: _ARRAY_API not found (Triggered internally at ../torch/csrc/utils/tensor_numpy.cpp:84.)
+  device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.1.3 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "/var/www/html/Uni-Sign/pre_training.py", line 3, in <module>
+    import torch
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/__init__.py", line 1382, in <module>
+    from .functional import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/functional.py", line 7, in <module>
+    import torch.nn.functional as F
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/__init__.py", line 1, in <module>
+    from .modules import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/__init__.py", line 35, in <module>
+    from .transformer import TransformerEncoder, TransformerDecoder, \
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py", line 20, in <module>
+    device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py:20: UserWarning: Failed to initialize NumPy: _ARRAY_API not found (Triggered internally at ../torch/csrc/utils/tensor_numpy.cpp:84.)
+  device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.1.3 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "/var/www/html/Uni-Sign/pre_training.py", line 3, in <module>
+    import torch
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/__init__.py", line 1382, in <module>
+    from .functional import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/functional.py", line 7, in <module>
+    import torch.nn.functional as F
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/__init__.py", line 1, in <module>
+    from .modules import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/__init__.py", line 35, in <module>
+    from .transformer import TransformerEncoder, TransformerDecoder, \
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py", line 20, in <module>
+    device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py:20: UserWarning: Failed to initialize NumPy: _ARRAY_API not found (Triggered internally at ../torch/csrc/utils/tensor_numpy.cpp:84.)
+  device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.1.3 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "/var/www/html/Uni-Sign/pre_training.py", line 3, in <module>
+    import torch
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/__init__.py", line 1382, in <module>
+    from .functional import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/functional.py", line 7, in <module>
+    import torch.nn.functional as F
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/__init__.py", line 1, in <module>
+    from .modules import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/__init__.py", line 35, in <module>
+    from .transformer import TransformerEncoder, TransformerDecoder, \
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py", line 20, in <module>
+    device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py:20: UserWarning: Failed to initialize NumPy: _ARRAY_API not found (Triggered internally at ../torch/csrc/utils/tensor_numpy.cpp:84.)
+  device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.1.3 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "/var/www/html/Uni-Sign/pre_training.py", line 3, in <module>
+    import torch
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/__init__.py", line 1382, in <module>
+    from .functional import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/functional.py", line 7, in <module>
+    import torch.nn.functional as F
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/__init__.py", line 1, in <module>
+    from .modules import *  # noqa: F403
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/__init__.py", line 35, in <module>
+    from .transformer import TransformerEncoder, TransformerDecoder, \
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py", line 20, in <module>
+    device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/nn/modules/transformer.py:20: UserWarning: Failed to initialize NumPy: _ARRAY_API not found (Triggered internally at ../torch/csrc/utils/tensor_numpy.cpp:84.)
+  device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+[2025-08-26 22:14:32,436] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-08-26 22:14:32,524] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-08-26 22:14:32,554] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-08-26 22:14:32,596] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-08-26 22:14:32,611] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-08-26 22:14:32,650] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-08-26 22:14:32,652] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-08-26 22:14:32,669] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+Traceback (most recent call last):
+  File "/var/www/html/Uni-Sign/pre_training.py", line 9, in <module>
+    from datasets import S2T_Dataset_news
+  File "/var/www/html/Uni-Sign/datasets.py", line 359
+    clean = []
+    ^
+IndentationError: expected an indented block after 'else' statement on line 357
+Traceback (most recent call last):
+  File "/var/www/html/Uni-Sign/pre_training.py", line 9, in <module>
+    from datasets import S2T_Dataset_news
+  File "/var/www/html/Uni-Sign/datasets.py", line 359
+    clean = []
+    ^
+IndentationError: expected an indented block after 'else' statement on line 357
+Traceback (most recent call last):
+  File "/var/www/html/Uni-Sign/pre_training.py", line 9, in <module>
+    from datasets import S2T_Dataset_news
+  File "/var/www/html/Uni-Sign/datasets.py", line 359
+    clean = []
+    ^
+IndentationError: expected an indented block after 'else' statement on line 357
+Traceback (most recent call last):
+  File "/var/www/html/Uni-Sign/pre_training.py", line 9, in <module>
+    from datasets import S2T_Dataset_news
+  File "/var/www/html/Uni-Sign/datasets.py", line 359
+    clean = []
+    ^
+IndentationError: expected an indented block after 'else' statement on line 357
+Traceback (most recent call last):
+  File "/var/www/html/Uni-Sign/pre_training.py", line 9, in <module>
+    from datasets import S2T_Dataset_news
+  File "/var/www/html/Uni-Sign/datasets.py", line 359
+    clean = []
+    ^
+IndentationError: expected an indented block after 'else' statement on line 357
+Traceback (most recent call last):
+  File "/var/www/html/Uni-Sign/pre_training.py", line 9, in <module>
+    from datasets import S2T_Dataset_news
+  File "/var/www/html/Uni-Sign/datasets.py", line 359
+    clean = []
+    ^
+IndentationError: expected an indented block after 'else' statement on line 357
+Traceback (most recent call last):
+  File "/var/www/html/Uni-Sign/pre_training.py", line 9, in <module>
+    from datasets import S2T_Dataset_news
+  File "/var/www/html/Uni-Sign/datasets.py", line 359
+    clean = []
+    ^
+IndentationError: expected an indented block after 'else' statement on line 357
+Traceback (most recent call last):
+  File "/var/www/html/Uni-Sign/pre_training.py", line 9, in <module>
+    from datasets import S2T_Dataset_news
+  File "/var/www/html/Uni-Sign/datasets.py", line 359
+    clean = []
+    ^
+IndentationError: expected an indented block after 'else' statement on line 357
+[2025-08-26 22:14:34,271] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 48811
+[2025-08-26 22:14:34,387] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 48812
+[2025-08-26 22:14:34,457] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 48813
+[2025-08-26 22:14:34,475] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 48814
+[2025-08-26 22:14:34,491] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 48815
+[2025-08-26 22:14:34,533] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 48816
+[2025-08-26 22:14:34,548] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 48817
+[2025-08-26 22:14:34,563] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 48818
+[2025-08-26 22:14:34,563] [ERROR] [launch.py:325:sigkill_handler] ['/home/danielharding/miniconda3/envs/unisign/bin/python', '-u', 'pre_training.py', '--local_rank=7', '--batch-size', '4', '--gradient-accumulation-steps', '8', '--epochs', '5', '--opt', 'AdamW', '--lr', '3e-4', '--quick_break', '2048', '--output_dir', 'out/stage2_pretraining', '--finetune', 'out/stage1_pretraining/best_checkpoint.pth', '--dataset', 'CSL_News'] exits with return code = 1

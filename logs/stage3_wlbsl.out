@@ -1,0 +1,136 @@
+nohup: ignoring input
+[2025-08-26 22:18:56,890] torch.distributed.run: [WARNING] master_addr is only used for static rdzv_backend and when rdzv_endpoint is not specified.
+[2025-08-26 22:19:01,982] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-08-26 22:19:02,005] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-08-26 22:19:02,067] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-08-26 22:19:02,085] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-08-26 22:19:02,117] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-08-26 22:19:02,134] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-08-26 22:19:02,156] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-08-26 22:19:02,181] [INFO] [real_accelerator.py:222:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/utils/cpp_extension.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+Traceback (most recent call last):
+  File "/var/www/html/Uni-Sign/fine_tuning.py", line 6, in <module>
+    from datasets import S2T_Dataset
+ImportError: cannot import name 'S2T_Dataset' from 'datasets' (/var/www/html/Uni-Sign/datasets.py)
+Traceback (most recent call last):
+  File "/var/www/html/Uni-Sign/fine_tuning.py", line 6, in <module>
+    from datasets import S2T_Dataset
+ImportError: cannot import name 'S2T_Dataset' from 'datasets' (/var/www/html/Uni-Sign/datasets.py)
+Traceback (most recent call last):
+  File "/var/www/html/Uni-Sign/fine_tuning.py", line 6, in <module>
+    from datasets import S2T_Dataset
+ImportError: cannot import name 'S2T_Dataset' from 'datasets' (/var/www/html/Uni-Sign/datasets.py)
+Traceback (most recent call last):
+  File "/var/www/html/Uni-Sign/fine_tuning.py", line 6, in <module>
+    from datasets import S2T_Dataset
+ImportError: cannot import name 'S2T_Dataset' from 'datasets' (/var/www/html/Uni-Sign/datasets.py)
+Traceback (most recent call last):
+  File "/var/www/html/Uni-Sign/fine_tuning.py", line 6, in <module>
+    from datasets import S2T_Dataset
+ImportError: cannot import name 'S2T_Dataset' from 'datasets' (/var/www/html/Uni-Sign/datasets.py)
+Traceback (most recent call last):
+  File "/var/www/html/Uni-Sign/fine_tuning.py", line 6, in <module>
+    from datasets import S2T_Dataset
+ImportError: cannot import name 'S2T_Dataset' from 'datasets' (/var/www/html/Uni-Sign/datasets.py)
+Traceback (most recent call last):
+  File "/var/www/html/Uni-Sign/fine_tuning.py", line 6, in <module>
+    from datasets import S2T_Dataset
+ImportError: cannot import name 'S2T_Dataset' from 'datasets' (/var/www/html/Uni-Sign/datasets.py)
+Traceback (most recent call last):
+  File "/var/www/html/Uni-Sign/fine_tuning.py", line 6, in <module>
+    from datasets import S2T_Dataset
+ImportError: cannot import name 'S2T_Dataset' from 'datasets' (/var/www/html/Uni-Sign/datasets.py)
+[2025-08-26 22:19:06,967] torch.distributed.elastic.multiprocessing.api: [ERROR] failed (exitcode: 1) local_rank: 0 (pid: 50127) of binary: /home/danielharding/miniconda3/envs/unisign/bin/python
+Traceback (most recent call last):
+  File "/home/danielharding/miniconda3/envs/unisign/bin/torchrun", line 7, in <module>
+    sys.exit(main())
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 346, in wrapper
+    return f(*args, **kwargs)
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/distributed/run.py", line 806, in main
+    run(args)
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/distributed/run.py", line 797, in run
+    elastic_launch(
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 134, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/home/danielharding/miniconda3/envs/unisign/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 264, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+fine_tuning.py FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2025-08-26_22:19:06
+  host      : inverse-26-aug-20250826-160333.europe-west3-a.c.inverse-machine-learning-ai-v2.internal
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 50128)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[2]:
+  time      : 2025-08-26_22:19:06
+  host      : inverse-26-aug-20250826-160333.europe-west3-a.c.inverse-machine-learning-ai-v2.internal
+  rank      : 2 (local_rank: 2)
+  exitcode  : 1 (pid: 50129)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[3]:
+  time      : 2025-08-26_22:19:06
+  host      : inverse-26-aug-20250826-160333.europe-west3-a.c.inverse-machine-learning-ai-v2.internal
+  rank      : 3 (local_rank: 3)
+  exitcode  : 1 (pid: 50130)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[4]:
+  time      : 2025-08-26_22:19:06
+  host      : inverse-26-aug-20250826-160333.europe-west3-a.c.inverse-machine-learning-ai-v2.internal
+  rank      : 4 (local_rank: 4)
+  exitcode  : 1 (pid: 50131)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[5]:
+  time      : 2025-08-26_22:19:06
+  host      : inverse-26-aug-20250826-160333.europe-west3-a.c.inverse-machine-learning-ai-v2.internal
+  rank      : 5 (local_rank: 5)
+  exitcode  : 1 (pid: 50132)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[6]:
+  time      : 2025-08-26_22:19:06
+  host      : inverse-26-aug-20250826-160333.europe-west3-a.c.inverse-machine-learning-ai-v2.internal
+  rank      : 6 (local_rank: 6)
+  exitcode  : 1 (pid: 50133)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[7]:
+  time      : 2025-08-26_22:19:06
+  host      : inverse-26-aug-20250826-160333.europe-west3-a.c.inverse-machine-learning-ai-v2.internal
+  rank      : 7 (local_rank: 7)
+  exitcode  : 1 (pid: 50134)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2025-08-26_22:19:06
+  host      : inverse-26-aug-20250826-160333.europe-west3-a.c.inverse-machine-learning-ai-v2.internal
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 50127)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================

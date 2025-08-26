@@ -358,20 +358,10 @@ class Base_Dataset(Dataset.Dataset):
             src_list, tgt_list, meta_list, support_rgb_list = zip(*batch)
             return list(src_list), list(tgt_list), list(meta_list), list(support_rgb_list)
         else:
-            clean = []
-            for sample in batch:
-                if isinstance(sample, (list, tuple)):
-                    if len(sample) >= 3:
-                        clean.append(tuple(sample[:3]))
-                    else:
-                        raise ValueError(f"Unexpected sample length {len(sample)}; expected ≥3")
-                else:
-                    clean.append(sample)
-            src_list, tgt_list, meta_list = zip(*clean)
-
+            src_list, tgt_list, meta_list = zip(*batch)
             return list(src_list), list(tgt_list), list(meta_list)
     def __init__(self, path, args, phase):
-        super().__init__()
+        super(S2T_Dataset, self).__init__()
         self.args = args
         self.rgb_support = self.args.rgb_support
         self.max_length = args.max_length

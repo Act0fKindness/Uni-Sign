@@ -315,28 +315,252 @@ def main(args):
 
 
 # --- ISLR-only target normalization ---
+def _normalize_islr_target(tgt):
+    import numpy as _np
+    KEYS = ('label','labels','target','targets','y','cls','class_id','id','tgt')
 
-
-
-
-def _as_tgt_dict(task, tgt):
-    # Ensure target is a dict the model expects.
-    # For CSLR, copy gt_gloss -> gt_sentence if missing.
+    # Drill into dicts to find a label field
     if isinstance(tgt, dict):
-        if task == "CSLR" and 'gt_sentence' not in tgt and 'gt_gloss' in tgt:
-            tgt = dict(tgt)
-            tgt['gt_sentence'] = tgt['gt_gloss']
-        return tgt
+        for k in KEYS:
+            if k in tgt:
+                return _normalize_islr_target(tgt[k])
+        if len(tgt) == 1:
+            return _normalize_islr_target(next(iter(tgt.values())))
+        raise ValueError(f"ISLR labels not found in dict keys={list(tgt.keys())}. Expected one of {KEYS}.")
+
+    # Tensor / ndarray -> long vec
+    if isinstance(tgt, torch.Tensor):
+        return tgt.long().view(-1)
+    if 'ndarray' in str(type(tgt)):  # lazy check to avoid importing numpy if not needed
+        try:
+            return torch.as_tensor(tgt, dtype=torch.long).view(-1)
+        except Exception:
+            pass
+
+    # Sequence -> list of ints
     if isinstance(tgt, (list, tuple)):
-        for item in tgt:
-            if isinstance(item, dict):
-                return _as_tgt_dict(task, item)
-        return {'gt_sentence': tgt}
-    return {'gt_sentence': tgt}
+        vals = []
+        for e in tgt:
+            t = _normalize_islr_target(e)
+            if isinstance(t, torch.Tensor):
+                vals.extend(t.view(-1).tolist())
+            else:
+                vals.append(int(t))
+        return torch.tensor(vals, dtype=torch.long).view(-1)
+
+    # Strings and scalars -> int tensor of len 1
+    if isinstance(tgt, str):
+        return torch.tensor([int(tgt)], dtype=torch.long)
+    try:
+        return torch.tensor([int(tgt)], dtype=torch.long)
+    except Exception as e:
+        raise TypeError(f"Unsupported ISLR label type: {type(tgt)}") from e
+
+
+
+
+# --- ISLR-only target normalization ---
+def _normalize_islr_target(tgt):
+    import numpy as _np
+    KEYS = ('label','labels','target','targets','y','cls','class_id','id','tgt')
+
+    # Drill into dicts to find a label field
+    if isinstance(tgt, dict):
+        for k in KEYS:
+            if k in tgt:
+                return _normalize_islr_target(tgt[k])
+        if len(tgt) == 1:
+            return _normalize_islr_target(next(iter(tgt.values())))
+        raise ValueError(f"ISLR labels not found in dict keys={list(tgt.keys())}. Expected one of {KEYS}.")
+
+    # Tensor / ndarray -> long vec
+    if isinstance(tgt, torch.Tensor):
+        return tgt.long().view(-1)
+    if 'ndarray' in str(type(tgt)):  # lazy check to avoid importing numpy if not needed
+        try:
+            return torch.as_tensor(tgt, dtype=torch.long).view(-1)
+        except Exception:
+            pass
+
+    # Sequence -> list of ints
+    if isinstance(tgt, (list, tuple)):
+        vals = []
+        for e in tgt:
+            t = _normalize_islr_target(e)
+            if isinstance(t, torch.Tensor):
+                vals.extend(t.view(-1).tolist())
+            else:
+                vals.append(int(t))
+        return torch.tensor(vals, dtype=torch.long).view(-1)
+
+    # Strings and scalars -> int tensor of len 1
+    if isinstance(tgt, str):
+        return torch.tensor([int(tgt)], dtype=torch.long)
+    try:
+        return torch.tensor([int(tgt)], dtype=torch.long)
+    except Exception as e:
+        raise TypeError(f"Unsupported ISLR label type: {type(tgt)}") from e
+
+
+
+
+# --- ISLR-only target normalization ---
+def _normalize_islr_target(tgt):
+    import numpy as _np
+    KEYS = ('label','labels','target','targets','y','cls','class_id','id','tgt')
+
+    # Drill into dicts to find a label field
+    if isinstance(tgt, dict):
+        for k in KEYS:
+            if k in tgt:
+                return _normalize_islr_target(tgt[k])
+        if len(tgt) == 1:
+            return _normalize_islr_target(next(iter(tgt.values())))
+        raise ValueError(f"ISLR labels not found in dict keys={list(tgt.keys())}. Expected one of {KEYS}.")
+
+    # Tensor / ndarray -> long vec
+    if isinstance(tgt, torch.Tensor):
+        return tgt.long().view(-1)
+    if 'ndarray' in str(type(tgt)):  # lazy check to avoid importing numpy if not needed
+        try:
+            return torch.as_tensor(tgt, dtype=torch.long).view(-1)
+        except Exception:
+            pass
+
+    # Sequence -> list of ints
+    if isinstance(tgt, (list, tuple)):
+        vals = []
+        for e in tgt:
+            t = _normalize_islr_target(e)
+            if isinstance(t, torch.Tensor):
+                vals.extend(t.view(-1).tolist())
+            else:
+                vals.append(int(t))
+        return torch.tensor(vals, dtype=torch.long).view(-1)
+
+    # Strings and scalars -> int tensor of len 1
+    if isinstance(tgt, str):
+        return torch.tensor([int(tgt)], dtype=torch.long)
+    try:
+        return torch.tensor([int(tgt)], dtype=torch.long)
+    except Exception as e:
+        raise TypeError(f"Unsupported ISLR label type: {type(tgt)}") from e
+
+
+
+
+# --- ISLR-only target normalization ---
+def _normalize_islr_target(tgt):
+    import numpy as _np
+    KEYS = ('label','labels','target','targets','y','cls','class_id','id','tgt')
+
+    # Drill into dicts to find a label field
+    if isinstance(tgt, dict):
+        for k in KEYS:
+            if k in tgt:
+                return _normalize_islr_target(tgt[k])
+        if len(tgt) == 1:
+            return _normalize_islr_target(next(iter(tgt.values())))
+        raise ValueError(f"ISLR labels not found in dict keys={list(tgt.keys())}. Expected one of {KEYS}.")
+
+    # Tensor / ndarray -> long vec
+    if isinstance(tgt, torch.Tensor):
+        return tgt.long().view(-1)
+    if 'ndarray' in str(type(tgt)):  # lazy check to avoid importing numpy if not needed
+        try:
+            return torch.as_tensor(tgt, dtype=torch.long).view(-1)
+        except Exception:
+            pass
+
+    # Sequence -> list of ints
+    if isinstance(tgt, (list, tuple)):
+        vals = []
+        for e in tgt:
+            t = _normalize_islr_target(e)
+            if isinstance(t, torch.Tensor):
+                vals.extend(t.view(-1).tolist())
+            else:
+                vals.append(int(t))
+        return torch.tensor(vals, dtype=torch.long).view(-1)
+
+    # Strings and scalars -> int tensor of len 1
+    if isinstance(tgt, str):
+        return torch.tensor([int(tgt)], dtype=torch.long)
+    try:
+        return torch.tensor([int(tgt)], dtype=torch.long)
+    except Exception as e:
+        raise TypeError(f"Unsupported ISLR label type: {type(tgt)}") from e
+
+
+
+
+# --- ISLR-only target normalization ---
+def _normalize_islr_target(tgt):
+    import torch, numpy as _np
+    KEYS = ('label','labels','target','targets','y','cls','class_id','id','tgt')
+    if isinstance(tgt, dict):
+        for k in KEYS:
+            if k in tgt:
+                return _normalize_islr_target(tgt[k])
+        if len(tgt) == 1:
+            return _normalize_islr_target(next(iter(tgt.values())))
+        raise ValueError(f"ISLR labels not found in dict keys={list(tgt.keys())}. Expected one of {KEYS}.")
+    if isinstance(tgt, torch.Tensor):
+        return tgt.long().view(-1)
+    if isinstance(tgt, _np.ndarray):
+        return torch.as_tensor(tgt, dtype=torch.long).view(-1)
+    if isinstance(tgt, (list, tuple)):
+        vals = []
+        for e in tgt:
+            t = _normalize_islr_target(e)
+            if isinstance(t, torch.Tensor):
+                vals.extend(t.view(-1).tolist())
+            else:
+                vals.append(int(t))
+        return torch.tensor(vals, dtype=torch.long).view(-1)
+    if isinstance(tgt, str):
+        return torch.tensor([int(tgt)], dtype=torch.long)
+    try:
+        return torch.tensor([int(tgt)], dtype=torch.long)
+    except Exception as e:
+        raise TypeError(f"Unsupported ISLR label type: {type(tgt)}") from e
+
+
+
+
+# --- ISLR-only target normalization ---
+def _normalize_islr_target(tgt):
+    import torch, numpy as _np
+    KEYS = ('label','labels','target','targets','y','cls','class_id','id','tgt')
+    if isinstance(tgt, dict):
+        for k in KEYS:
+            if k in tgt:
+                return _normalize_islr_target(tgt[k])
+        if len(tgt) == 1:
+            return _normalize_islr_target(next(iter(tgt.values())))
+        raise ValueError(f"ISLR labels not found in dict keys={list(tgt.keys())}. Expected one of {KEYS}.")
+    if isinstance(tgt, torch.Tensor):
+        return tgt.long().view(-1)
+    if isinstance(tgt, _np.ndarray):
+        return torch.as_tensor(tgt, dtype=torch.long).view(-1)
+    if isinstance(tgt, (list, tuple)):
+        vals = []
+        for e in tgt:
+            t = _normalize_islr_target(e)
+            if isinstance(t, torch.Tensor):
+                vals.extend(t.view(-1).tolist())
+            else:
+                vals.append(int(t))
+        return torch.tensor(vals, dtype=torch.long).view(-1)
+    if isinstance(tgt, str):
+        return torch.tensor([int(tgt)], dtype=torch.long)
+    try:
+        return torch.tensor([int(tgt)], dtype=torch.long)
+    except Exception as e:
+        raise TypeError(f"Unsupported ISLR label type: {type(tgt)}") from e
 
 
 def train_one_epoch(args, model, data_loader, optimizer, epoch):
-    import math, torch
     model.train()
     metric_logger = utils.MetricLogger(delimiter="  ")
     metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
@@ -372,49 +596,46 @@ def train_one_epoch(args, model, data_loader, optimizer, epoch):
                     v = v.to(target_dtype)
                 src_input[k] = v.cuda(non_blocking=True)
 
-        # Keep tgt as dict (model forward expects dict)
-        tgt_input = _as_tgt_dict(args.task, tgt_input)
+        # Normalize tgt per task
+        if args.task == "ISLR":
+            tgt_input = _normalize_islr_target(tgt_input).cuda(non_blocking=True)
+        else:
+            if not isinstance(tgt_input, dict):
+                tgt_input = {'gt_sentence': tgt_input}
+            if args.task == "CSLR" and 'gt_sentence' not in tgt_input and 'gt_gloss' in tgt_input:
+                tgt_input['gt_sentence'] = tgt_input['gt_gloss']
 
-        # First batch: peek shapes/types
-        if step == 0:
-            try:
-                shapes = {k: (v.shape if isinstance(v, torch.Tensor) else type(v).__name__) for k,v in src_input.items()}
-            except Exception:
-                shapes = {k: type(v).__name__ for k,v in src_input.items()}
-            print("[peek] src_input keys:", list(src_input.keys()))
-            print("[peek] src_input shapes/types:", shapes)
-            print("[peek] tgt_input keys:", list(tgt_input.keys()))
-
+        # Fwd/Bwd
         out = model(src_input, tgt_input)
         total_loss = out['loss']
         model.backward(total_loss)
         model.step()
 
-        loss_value = float(total_loss.item())
-        if not math.isfinite(loss_value):
-            print(f"Loss is {loss_value}, stopping.")
+        loss_value = total_loss.item()
+        if not (loss_value == loss_value and abs(loss_value) != float("inf")):
+            print(f"Loss is {loss_value}, stopping training")
             import sys; sys.exit(1)
 
         metric_logger.update(loss=loss_value)
-        metric_logger.update(lr=optimizer.param_groups[0]["lr"])
+        metric_logger.update(lr=optimizer.param_groups[0]['lr'])
 
     metric_logger.synchronize_between_processes()
-    print("Averaged stats:", metric_logger)
+    print('Averaged stats:', metric_logger)
     return {k: meter.global_avg for k, meter in metric_logger.meters.items()}
 
 
 def evaluate(args, data_loader, model, model_without_ddp, phase):
-    import torch
     model.eval()
-    metric_logger = utils.MetricLogger(delimiter="  ")
+    metric_logger = utils.MetricLogger(delimiter='  ')
     header = 'Test:'
     print_freq = 10
 
-    use_bf16 = hasattr(model, "bfloat16_enabled") and model.bfloat16_enabled()
+    use_bf16 = hasattr(model, 'bfloat16_enabled') and model.bfloat16_enabled()
     target_dtype = torch.bfloat16 if use_bf16 else None
 
     with torch.no_grad():
-        tgt_pres, tgt_refs = [], []
+        tgt_pres = []
+        tgt_refs = []
 
         for step, batch in enumerate(metric_logger.log_every(data_loader, print_freq, header)):
             # Unpack
@@ -425,13 +646,13 @@ def evaluate(args, data_loader, model, model_without_ddp, phase):
                     src_input, tgt_input = batch
                     meta = None
                 else:
-                    raise ValueError(f"Unexpected batch length: {len(batch)}")
+                    raise ValueError(f'Unexpected batch length: {len(batch)}')
             elif isinstance(batch, dict):
                 src_input = batch.get('src_input') or batch.get('src')
                 tgt_input = batch.get('tgt_input') or batch.get('tgt') or batch.get('label')
                 meta = batch.get('meta', None)
             else:
-                raise ValueError(f"Unexpected batch type: {type(batch)}")
+                raise ValueError(f'Unexpected batch type: {type(batch)}')
 
             # Normalize/move src
             src_input = _normalize_src_input(src_input)
@@ -441,14 +662,16 @@ def evaluate(args, data_loader, model, model_without_ddp, phase):
                         v = v.to(target_dtype)
                     src_input[k] = v.cuda(non_blocking=True)
 
-            # Normalize tgt to dict; ensure CSLR gt_sentence
-            tgt_input = _as_tgt_dict(args.task, tgt_input)
+            # Ensure dict-style target for refs
+            if not isinstance(tgt_input, dict):
+                tgt_input = {'gt_sentence': tgt_input}
+            if args.task == 'CSLR' and 'gt_sentence' not in tgt_input and 'gt_gloss' in tgt_input:
+                tgt_input['gt_sentence'] = tgt_input['gt_gloss']
 
             out = model(src_input, tgt_input)
             total_loss = out['loss']
             metric_logger.update(loss=total_loss.item())
 
-            # Text generation for metrics (as expected by this project)
             gen_ids = model_without_ddp.generate(out, max_new_tokens=100, num_beams=4)
             id_lists = []
             for g in gen_ids:
@@ -469,32 +692,29 @@ def evaluate(args, data_loader, model, model_without_ddp, phase):
             tgt_pres.extend(pred_texts)
             tgt_refs.extend(ref_texts)
 
-    # CSL_Daily tokenization quirk
-    if args.dataset == 'CSL_Daily' and args.task == "SLT":
-        tgt_pres = [' '.join(list(r.replace(" ",'').replace("\n",''))) for r in tgt_pres]
-        tgt_refs = [' '.join(list(r.replace("，", ',').replace("？","?").replace(" ",''))) for r in tgt_refs]
+    if args.dataset == 'CSL_Daily' and args.task == 'SLT':
+        tgt_pres = [' '.join(list(r.replace(' ','').replace('\\n',''))) for r in tgt_pres]
+        tgt_refs = [' '.join(list(r.replace('，', ',').replace('？','?').replace(' ',''))) for r in tgt_refs]
 
-    # Compute task metrics
-    if args.task == "SLT":
+    if args.task == 'SLT':
         bleu_dict, rouge_score = translation_performance(tgt_refs, tgt_pres)
-        for k,v in bleu_dict.items():
+        for k, v in bleu_dict.items():
             metric_logger.meters[k].update(v)
         metric_logger.meters['rouge'].update(rouge_score)
-    elif args.task == "ISLR":
+    elif args.task == 'ISLR':
         top1_acc_pi, top1_acc_pc = islr_performance(tgt_refs, tgt_pres)
         metric_logger.meters['top1_acc_pi'].update(top1_acc_pi)
         metric_logger.meters['top1_acc_pc'].update(top1_acc_pc)
-    elif args.task == "CSLR":
+    elif args.task == 'CSLR':
         wer_results = wer_list(hypotheses=tgt_pres, references=tgt_refs)
-        for k,v in wer_results.items():
+        for k, v in wer_results.items():
             metric_logger.meters[k].update(v)
 
-    # Optional debug dumps during --eval
     if utils.is_main_process() and utils.get_world_size() == 1 and args.eval:
-        from pathlib import Path as _P
-        out_dir = _P(args.output_dir); out_dir.mkdir(parents=True, exist_ok=True)
-        (out_dir / f'{phase}_tmp_pres.txt').write_text('\n'.join(map(str, tgt_pres)) + '\n')
-        (out_dir / f'{phase}_tmp_refs.txt').write_text('\n'.join(map(str, tgt_refs)) + '\n')
+        out_dir = Path(args.output_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / f'{phase}_tmp_pres.txt').write_text('\\n'.join(map(str, tgt_pres)) + '\\n')
+        (out_dir / f'{phase}_tmp_refs.txt').write_text('\\n'.join(map(str, tgt_refs)) + '\\n')
 
     return {k: meter.global_avg for k, meter in metric_logger.meters.items()}
 
@@ -504,7 +724,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('Uni-Sign scripts', parents=[utils.get_args_parser()])
     args = parser.parse_args()
     if args.output_dir:
-        from pathlib import Path
         Path(args.output_dir).mkdir(parents=True, exist_ok=True)
     main(args)
 

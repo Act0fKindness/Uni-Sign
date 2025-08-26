@@ -1,7 +1,65 @@
 import torch
-print('>>> Uni-Sign fine_tuning starting <<<')
 
 # --- Target/label normalization shim ---
+def _normalize_tgt_input(tgt):
+    import torch, numpy as _np
+
+    KEYS = ('label','labels','target','targets','y','cls','class_id','id','tgt')
+
+    def _extract(x):
+        # Dict -> follow known keys; if only one key, take that value; otherwise error.
+        if isinstance(x, dict):
+            for k in KEYS:
+                if k in x:
+                    return _extract(x[k])
+            if len(x) == 1:
+                return _extract(next(iter(x.values())))
+            raise ValueError(f"Could not find label key in dict; keys={list(x.keys())}")
+
+        # Tensor
+        if isinstance(x, torch.Tensor):
+            if x.ndim == 0:  # scalar
+                return int(x.item())
+            # Already a vector/array of ids
+            return x.long()
+
+        # NumPy
+        try:
+            if isinstance(x, _np.ndarray):
+                if x.ndim == 0:
+                    return int(x.item())
+                return torch.as_tensor(x, dtype=torch.long)
+        except Exception:
+            pass
+
+        # Sequence -> extract each element
+        if isinstance(x, (list, tuple)):
+            return torch.as_tensor([_extract(e) for e in x], dtype=torch.long)
+
+        # String -> try to parse as int; otherwise fail with a helpful message
+        if isinstance(x, str):
+            try:
+                return int(x)
+            except Exception as e:
+                raise ValueError(f"String label '{x}' cannot be parsed as int; dataset should map labels to ids before training.") from e
+
+        # Python scalars
+        try:
+            return int(x)
+        except Exception:
+            raise TypeError(f'Unsupported label type: {type(x)}')
+
+    out = _extract(tgt)
+    # Final tensorize
+    if isinstance(out, int):
+        return torch.tensor(out, dtype=torch.long)
+    if isinstance(out, torch.Tensor):
+        return out.long()
+    return torch.as_tensor(out, dtype=torch.long)
+# --- end target shim ---
+
+
+# --- Batch/input normalization shim ---
 def _normalize_src_input(src):
     import torch, numpy as _np  # local scope to avoid top-level deps issues
     if isinstance(src, dict):
@@ -312,199 +370,207 @@ def main(args):
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     print('Training time {}'.format(total_time_str))
 
-
-
-# --- ISLR-only target normalization ---
-
-
-
-
-def _as_tgt_dict(task, tgt):
-    # Ensure target is a dict the model expects.
-    # For CSLR, copy gt_gloss -> gt_sentence if missing.
-    if isinstance(tgt, dict):
-        if task == "CSLR" and 'gt_sentence' not in tgt and 'gt_gloss' in tgt:
-            tgt = dict(tgt)
-            tgt['gt_sentence'] = tgt['gt_gloss']
-        return tgt
-    if isinstance(tgt, (list, tuple)):
-        for item in tgt:
-            if isinstance(item, dict):
-                return _as_tgt_dict(task, item)
-        return {'gt_sentence': tgt}
-    return {'gt_sentence': tgt}
-
-
 def train_one_epoch(args, model, data_loader, optimizer, epoch):
-    import math, torch
     model.train()
+
     metric_logger = utils.MetricLogger(delimiter="  ")
     metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
     header = 'Epoch: [{}/{}]'.format(epoch, args.epochs)
     print_freq = 10
     optimizer.zero_grad()
 
-    use_bf16 = hasattr(model, "bfloat16_enabled") and model.bfloat16_enabled()
-    target_dtype = torch.bfloat16 if use_bf16 else None
+    target_dtype = None
+    if model.bfloat16_enabled():
+        target_dtype = torch.bfloat16
 
     for step, batch in enumerate(metric_logger.log_every(data_loader, print_freq, header)):
-        # Unpack
+
+        # Accept (src,tgt) or (src,tgt,meta) or dicts
+
         if isinstance(batch, (list, tuple)):
+
             if len(batch) >= 3:
+
                 src_input, tgt_input, meta = batch[:3]
+
             elif len(batch) == 2:
+
                 src_input, tgt_input = batch
+
                 meta = None
+
             else:
+
                 raise ValueError(f"Unexpected batch length: {len(batch)}")
+
         elif isinstance(batch, dict):
+
             src_input = batch.get('src_input') or batch.get('src')
+
             tgt_input = batch.get('tgt_input') or batch.get('tgt') or batch.get('label')
+
             meta = batch.get('meta', None)
+
         else:
+
             raise ValueError(f"Unexpected batch type: {type(batch)}")
+        if target_dtype != None:
+            # normalize inputs from collate
+            import torch as _torch
+            src_input = _normalize_src_input(src_input)
+            tgt_input = _normalize_tgt_input(tgt_input)
 
-        # Normalize/move src
-        src_input = _normalize_src_input(src_input)
-        for k, v in list(src_input.items()):
-            if isinstance(v, torch.Tensor):
-                if target_dtype is not None and v.dtype.is_floating_point:
-                    v = v.to(target_dtype)
-                src_input[k] = v.cuda(non_blocking=True)
+            tgt_input = _normalize_tgt_input(tgt_input)
+            for key in src_input.keys():
 
-        # Keep tgt as dict (model forward expects dict)
-        tgt_input = _as_tgt_dict(args.task, tgt_input)
+                if isinstance(src_input[key], torch.Tensor):
+                    src_input[key] = src_input[key].to(target_dtype).cuda()
 
-        # First batch: peek shapes/types
-        if step == 0:
-            try:
-                shapes = {k: (v.shape if isinstance(v, torch.Tensor) else type(v).__name__) for k,v in src_input.items()}
-            except Exception:
-                shapes = {k: type(v).__name__ for k,v in src_input.items()}
-            print("[peek] src_input keys:", list(src_input.keys()))
-            print("[peek] src_input shapes/types:", shapes)
-            print("[peek] tgt_input keys:", list(tgt_input.keys()))
-
-        out = model(src_input, tgt_input)
-        total_loss = out['loss']
+        if args.task == "CSLR":
+            tgt_input['gt_sentence'] = tgt_input['gt_gloss']
+        stack_out = model(src_input, tgt_input)
+        
+        total_loss = stack_out['loss']
         model.backward(total_loss)
         model.step()
 
-        loss_value = float(total_loss.item())
+        loss_value = total_loss.item()
         if not math.isfinite(loss_value):
-            print(f"Loss is {loss_value}, stopping.")
-            import sys; sys.exit(1)
-
+            print("Loss is {}, stopping training".format(loss_value))
+            sys.exit(1)
+            
         metric_logger.update(loss=loss_value)
         metric_logger.update(lr=optimizer.param_groups[0]["lr"])
 
+    # gather the stats from all processes
     metric_logger.synchronize_between_processes()
     print("Averaged stats:", metric_logger)
-    return {k: meter.global_avg for k, meter in metric_logger.meters.items()}
 
+    return  {k: meter.global_avg for k, meter in metric_logger.meters.items()}
 
 def evaluate(args, data_loader, model, model_without_ddp, phase):
-    import torch
     model.eval()
+
     metric_logger = utils.MetricLogger(delimiter="  ")
     header = 'Test:'
-    print_freq = 10
 
-    use_bf16 = hasattr(model, "bfloat16_enabled") and model.bfloat16_enabled()
-    target_dtype = torch.bfloat16 if use_bf16 else None
-
+    target_dtype = None
+    if model.bfloat16_enabled():
+        target_dtype = torch.bfloat16
+        
     with torch.no_grad():
-        tgt_pres, tgt_refs = [], []
-
+        tgt_pres = []
+        tgt_refs = []
+ 
         for step, batch in enumerate(metric_logger.log_every(data_loader, print_freq, header)):
-            # Unpack
+ 
+            # Accept (src,tgt) or (src,tgt,meta) or dicts
+ 
             if isinstance(batch, (list, tuple)):
+ 
                 if len(batch) >= 3:
+ 
                     src_input, tgt_input, meta = batch[:3]
+ 
                 elif len(batch) == 2:
+ 
                     src_input, tgt_input = batch
+ 
                     meta = None
+ 
                 else:
+ 
                     raise ValueError(f"Unexpected batch length: {len(batch)}")
+ 
             elif isinstance(batch, dict):
+ 
                 src_input = batch.get('src_input') or batch.get('src')
+ 
                 tgt_input = batch.get('tgt_input') or batch.get('tgt') or batch.get('label')
+ 
                 meta = batch.get('meta', None)
+ 
             else:
+ 
                 raise ValueError(f"Unexpected batch type: {type(batch)}")
+            if target_dtype != None:
+                # normalize inputs from collate
+                import torch as _torch
+                src_input = _normalize_src_input(src_input)
+                tgt_input = _normalize_tgt_input(tgt_input)
 
-            # Normalize/move src
-            src_input = _normalize_src_input(src_input)
-            for k, v in list(src_input.items()):
-                if isinstance(v, torch.Tensor):
-                    if target_dtype is not None and v.dtype.is_floating_point:
-                        v = v.to(target_dtype)
-                    src_input[k] = v.cuda(non_blocking=True)
+                tgt_input = _normalize_tgt_input(tgt_input)
+                for key in src_input.keys():
 
-            # Normalize tgt to dict; ensure CSLR gt_sentence
-            tgt_input = _as_tgt_dict(args.task, tgt_input)
-
-            out = model(src_input, tgt_input)
-            total_loss = out['loss']
+                    if isinstance(src_input[key], torch.Tensor):
+                        src_input[key] = src_input[key].to(target_dtype).cuda()
+            
+            if args.task == "CSLR":
+                tgt_input['gt_sentence'] = tgt_input['gt_gloss']
+            stack_out = model(src_input, tgt_input)
+            
+            total_loss = stack_out['loss']
             metric_logger.update(loss=total_loss.item())
+        
+            output = model_without_ddp.generate(stack_out, 
+                                                max_new_tokens=100, 
+                                                num_beams = 4,
+                        )
 
-            # Text generation for metrics (as expected by this project)
-            gen_ids = model_without_ddp.generate(out, max_new_tokens=100, num_beams=4)
-            id_lists = []
-            for g in gen_ids:
-                if isinstance(g, torch.Tensor):
-                    id_lists.append(g.detach().cpu().tolist())
-                else:
-                    id_lists.append(list(g))
+            for i in range(len(output)):
+                tgt_pres.append(output[i])
+                tgt_refs.append(tgt_input['gt_sentence'][i])
 
-            tokenizer = model_without_ddp.mt5_tokenizer
-            pred_texts = tokenizer.batch_decode(id_lists, skip_special_tokens=True)
+    tokenizer = model_without_ddp.mt5_tokenizer
+    padding_value = tokenizer.eos_token_id
+    
+    pad_tensor = torch.ones(150-len(tgt_pres[0])).cuda() * padding_value
+    tgt_pres[0] = torch.cat((tgt_pres[0],pad_tensor.long()),dim = 0)
 
-            refs = tgt_input.get('gt_sentence')
-            if isinstance(refs, (list, tuple)):
-                ref_texts = [str(r) for r in refs]
-            else:
-                ref_texts = [str(refs)] * len(pred_texts)
+    tgt_pres = pad_sequence(tgt_pres,batch_first=True,padding_value=padding_value)
+    tgt_pres = tokenizer.batch_decode(tgt_pres, skip_special_tokens=True)
 
-            tgt_pres.extend(pred_texts)
-            tgt_refs.extend(ref_texts)
-
-    # CSL_Daily tokenization quirk
+    # fix mt5 tokenizer bug
     if args.dataset == 'CSL_Daily' and args.task == "SLT":
         tgt_pres = [' '.join(list(r.replace(" ",'').replace("\n",''))) for r in tgt_pres]
         tgt_refs = [' '.join(list(r.replace("，", ',').replace("？","?").replace(" ",''))) for r in tgt_refs]
 
-    # Compute task metrics
     if args.task == "SLT":
         bleu_dict, rouge_score = translation_performance(tgt_refs, tgt_pres)
         for k,v in bleu_dict.items():
             metric_logger.meters[k].update(v)
         metric_logger.meters['rouge'].update(rouge_score)
+    
     elif args.task == "ISLR":
         top1_acc_pi, top1_acc_pc = islr_performance(tgt_refs, tgt_pres)
         metric_logger.meters['top1_acc_pi'].update(top1_acc_pi)
         metric_logger.meters['top1_acc_pc'].update(top1_acc_pc)
+        
     elif args.task == "CSLR":
         wer_results = wer_list(hypotheses=tgt_pres, references=tgt_refs)
+        print(wer_results)
         for k,v in wer_results.items():
             metric_logger.meters[k].update(v)
 
-    # Optional debug dumps during --eval
+    # # gather the stats from all processes
+    # metric_logger.synchronize_between_processes()
+    
     if utils.is_main_process() and utils.get_world_size() == 1 and args.eval:
-        from pathlib import Path as _P
-        out_dir = _P(args.output_dir); out_dir.mkdir(parents=True, exist_ok=True)
-        (out_dir / f'{phase}_tmp_pres.txt').write_text('\n'.join(map(str, tgt_pres)) + '\n')
-        (out_dir / f'{phase}_tmp_refs.txt').write_text('\n'.join(map(str, tgt_refs)) + '\n')
-
+        with open(args.output_dir+f'/{phase}_tmp_pres.txt','w') as f:
+            for i in range(len(tgt_pres)):
+                f.write(tgt_pres[i]+'\n')
+        with open(args.output_dir+f'/{phase}_tmp_refs.txt','w') as f:
+            for i in range(len(tgt_refs)):
+                f.write(tgt_refs[i]+'\n')
+        
     return {k: meter.global_avg for k, meter in metric_logger.meters.items()}
 
 if __name__ == '__main__':
-    import os, argparse
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
     parser = argparse.ArgumentParser('Uni-Sign scripts', parents=[utils.get_args_parser()])
     args = parser.parse_args()
+
     if args.output_dir:
-        from pathlib import Path
         Path(args.output_dir).mkdir(parents=True, exist_ok=True)
     main(args)
-

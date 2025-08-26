@@ -317,27 +317,35 @@ def main(args):
 # --- ISLR-only target normalization ---
 
 
-
-
 def _as_tgt_dict(task, tgt):
-    # Ensure target is a dict the model expects.
-    # For CSLR, copy gt_gloss -> gt_sentence if missing.
+    \"\"\"Ensure the target is a dict the model expects.
+    For ISLR/SLT/CSLR this code keeps/creates 'gt_sentence' when needed.
+    We DO NOT coerce to torch tensors here — the model wants a dict.
+    \"\"\"
+    # Already dict? great.
     if isinstance(tgt, dict):
+        # CSLR uses gt_gloss; model reads gt_sentence
         if task == "CSLR" and 'gt_sentence' not in tgt and 'gt_gloss' in tgt:
             tgt = dict(tgt)
             tgt['gt_sentence'] = tgt['gt_gloss']
         return tgt
+
+    # Tuple/list batches where one element is a dict
     if isinstance(tgt, (list, tuple)):
         for item in tgt:
             if isinstance(item, dict):
                 return _as_tgt_dict(task, item)
+        # Otherwise wrap under gt_sentence (text label name)
         return {'gt_sentence': tgt}
+
+    # Scalars/strings -> wrap
     return {'gt_sentence': tgt}
 
 
 def train_one_epoch(args, model, data_loader, optimizer, epoch):
     import math, torch
     model.train()
+
     metric_logger = utils.MetricLogger(delimiter="  ")
     metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
     header = 'Epoch: [{}/{}]'.format(epoch, args.epochs)
@@ -348,7 +356,7 @@ def train_one_epoch(args, model, data_loader, optimizer, epoch):
     target_dtype = torch.bfloat16 if use_bf16 else None
 
     for step, batch in enumerate(metric_logger.log_every(data_loader, print_freq, header)):
-        # Unpack
+        # Unpack dataloader outputs
         if isinstance(batch, (list, tuple)):
             if len(batch) >= 3:
                 src_input, tgt_input, meta = batch[:3]
@@ -358,9 +366,9 @@ def train_one_epoch(args, model, data_loader, optimizer, epoch):
             else:
                 raise ValueError(f"Unexpected batch length: {len(batch)}")
         elif isinstance(batch, dict):
-            src_input = batch.get('src_input') or batch.get('src')
-            tgt_input = batch.get('tgt_input') or batch.get('tgt') or batch.get('label')
-            meta = batch.get('meta', None)
+            src_input  = batch.get('src_input') or batch.get('src')
+            tgt_input  = batch.get('tgt_input') or batch.get('tgt') or batch.get('label')
+            meta       = batch.get('meta', None)
         else:
             raise ValueError(f"Unexpected batch type: {type(batch)}")
 
@@ -372,19 +380,21 @@ def train_one_epoch(args, model, data_loader, optimizer, epoch):
                     v = v.to(target_dtype)
                 src_input[k] = v.cuda(non_blocking=True)
 
-        # Keep tgt as dict (model forward expects dict)
+        # Keep tgt as dict (model expects e.g. 'gt_sentence')
         tgt_input = _as_tgt_dict(args.task, tgt_input)
 
-        # First batch: peek shapes/types
+        # First batch: quick peek of shapes/types
         if step == 0:
             try:
-                shapes = {k: (v.shape if isinstance(v, torch.Tensor) else type(v).__name__) for k,v in src_input.items()}
+                import torch as _t
+                shapes = {k: (v.shape if isinstance(v, _t.Tensor) else type(v).__name__) for k,v in src_input.items()}
             except Exception:
                 shapes = {k: type(v).__name__ for k,v in src_input.items()}
             print("[peek] src_input keys:", list(src_input.keys()))
             print("[peek] src_input shapes/types:", shapes)
             print("[peek] tgt_input keys:", list(tgt_input.keys()))
 
+        # Forward/backward with DeepSpeed engine
         out = model(src_input, tgt_input)
         total_loss = out['loss']
         model.backward(total_loss)
@@ -406,6 +416,7 @@ def train_one_epoch(args, model, data_loader, optimizer, epoch):
 def evaluate(args, data_loader, model, model_without_ddp, phase):
     import torch
     model.eval()
+
     metric_logger = utils.MetricLogger(delimiter="  ")
     header = 'Test:'
     print_freq = 10
@@ -427,9 +438,9 @@ def evaluate(args, data_loader, model, model_without_ddp, phase):
                 else:
                     raise ValueError(f"Unexpected batch length: {len(batch)}")
             elif isinstance(batch, dict):
-                src_input = batch.get('src_input') or batch.get('src')
-                tgt_input = batch.get('tgt_input') or batch.get('tgt') or batch.get('label')
-                meta = batch.get('meta', None)
+                src_input  = batch.get('src_input') or batch.get('src')
+                tgt_input  = batch.get('tgt_input') or batch.get('tgt') or batch.get('label')
+                meta       = batch.get('meta', None)
             else:
                 raise ValueError(f"Unexpected batch type: {type(batch)}")
 
@@ -441,14 +452,14 @@ def evaluate(args, data_loader, model, model_without_ddp, phase):
                         v = v.to(target_dtype)
                     src_input[k] = v.cuda(non_blocking=True)
 
-            # Normalize tgt to dict; ensure CSLR gt_sentence
+            # Normalize tgt to dict; ensure cslr gt_sentence
             tgt_input = _as_tgt_dict(args.task, tgt_input)
 
             out = model(src_input, tgt_input)
             total_loss = out['loss']
             metric_logger.update(loss=total_loss.item())
 
-            # Text generation for metrics (as expected by this project)
+            # Text generation for metrics
             gen_ids = model_without_ddp.generate(out, max_new_tokens=100, num_beams=4)
             id_lists = []
             for g in gen_ids:
@@ -491,10 +502,9 @@ def evaluate(args, data_loader, model, model_without_ddp, phase):
 
     # Optional debug dumps during --eval
     if utils.is_main_process() and utils.get_world_size() == 1 and args.eval:
-        from pathlib import Path as _P
-        out_dir = _P(args.output_dir); out_dir.mkdir(parents=True, exist_ok=True)
-        (out_dir / f'{phase}_tmp_pres.txt').write_text('\n'.join(map(str, tgt_pres)) + '\n')
-        (out_dir / f'{phase}_tmp_refs.txt').write_text('\n'.join(map(str, tgt_refs)) + '\n')
+        out_dir = Path(args.output_dir); out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / f'{phase}_tmp_pres.txt').write_text('\\n'.join(map(str, tgt_pres)) + '\\n')
+        (out_dir / f'{phase}_tmp_refs.txt').write_text('\\n'.join(map(str, tgt_refs)) + '\\n')
 
     return {k: meter.global_avg for k, meter in metric_logger.meters.items()}
 
@@ -504,7 +514,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('Uni-Sign scripts', parents=[utils.get_args_parser()])
     args = parser.parse_args()
     if args.output_dir:
-        from pathlib import Path
         Path(args.output_dir).mkdir(parents=True, exist_ok=True)
     main(args)
 
