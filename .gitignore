@@ -52,3 +52,8 @@ pretrained_weight/
 *.mkv
 *.npz
 *.npy
+data/CSL_News/**
+data/**/pose_format/**
+data/**/rgb_format/**
+data/**/*.csv*
+data/**/*.json
