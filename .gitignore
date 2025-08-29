@@ -1,1 +1,37 @@
-<the above>
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/ venv/ env/
+
+# Node
+node_modules/
+dist/ build/
+
+# Data / artifacts (keep these out of Git)
+data/
+datasets/
+downloads/
+out/
+outputs/
+runs/
+checkpoints/
+wandb/
+mlruns/
+tensorboard/
+events.out.tfevents.*
+
+# Weights / large files
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.npz
+*.npy
+*.zip
+*.tar
+*.tar.gz
